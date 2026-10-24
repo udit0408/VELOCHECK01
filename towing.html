@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Contact a Towing truck — VELOCHECK</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link rel="stylesheet" href="leaflet.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#090e1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="app-navigation.js" defer></script>
+    <script src="auth-client.js"></script>
+    <!-- Leaflet JS with multi-CDN & local fallback -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        if (typeof L === 'undefined') {
+            document.write('<script src="leaflet.js"><\/script>');
+        }
+    </script>
+    <script>
+        if (typeof L === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"><\/script>');
+        }
+    </script>
+    <style>
+        /* Critical Leaflet structural fallbacks to avoid layout shattering */
+        .leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow,
+        .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas,
+        .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer {
+            position: absolute; left: 0; top: 0;
+        }
+        .leaflet-container {
+            overflow: hidden; position: relative; -ms-touch-action: none; touch-action: none;
+        }
+        .leaflet-tile {
+            filter: inherit; visibility: hidden;
+        }
+        .leaflet-tile-loaded {
+            visibility: inherit;
+        }
+    </style>
+</head>
+<body class="towing-page">
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline">Operator 9140 · Udit Veer Singh</p>
+            </div>
+        </div>
+        <div class="vc-header-meta">Telemetry link<br><strong id="espLinkStatus">Direct Wi-Fi</strong></div>
+    </header>
+
+    <main class="vc-page">
+        <div class="page-head">
+            <a class="back-link" href="homepage.html" aria-label="Back to home">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <div style="flex:1; min-width:0;">
+                <h2 class="page-title">Roadside Towing &amp; Service Bookings</h2>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                    Digital Pass Generator · Live Towing Fleet &amp; Tyre Service Appointments
+                </p>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <button type="button" class="btn btn-primary btn-sm" id="openTokenModalBtn">
+                    🎟️ Book Pass
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" id="openMyTokensBtn">
+                    📋 My Passes (<span id="tokenCountBadge">0</span>)
+                </button>
+            </div>
+        </div>
+
+        <!-- Service Quick Bar -->
+        <div class="service-quick-bar">
+            <div class="service-quick-card towing" data-service-type="TOWING" id="quickCardTowing">
+                <div class="sqc-icon">🚨</div>
+                <div class="sqc-body">
+                    <strong>Emergency Towing Dispatch</strong>
+                    <span>Live roadside fleet with GPS route &amp; traffic ETA</span>
+                </div>
+                <button type="button" class="sqc-btn">Dispatch →</button>
+            </div>
+            <div class="service-quick-card checkup" data-service-type="TYRE_CHECKUP" id="quickCardCheckup">
+                <div class="sqc-icon">🔍</div>
+                <div class="sqc-body">
+                    <strong>Service Center: Tyre Checkup</strong>
+                    <span>3D laser tread depth, TPMS &amp; wheel balance</span>
+                </div>
+                <button type="button" class="sqc-btn">Book Bay →</button>
+            </div>
+            <div class="service-quick-card replacement" data-service-type="TYRE_REPLACEMENT" id="quickCardReplacement">
+                <div class="sqc-icon">🔄</div>
+                <div class="sqc-body">
+                    <strong>Service Center: Tyre Replacement</strong>
+                    <span>Premium radials, high-speed balancing &amp; swap</span>
+                </div>
+                <button type="button" class="sqc-btn">Reserve Tyres →</button>
+            </div>
+        </div>
+
+        <div class="tow-layout">
+            <section class="panel tow-map-panel" aria-label="Interactive map of nearby towing trucks">
+                <div class="tow-map-head">
+                    <button class="btn btn-outline" type="button" id="locateBtn">📍 My Location</button>
+                    <button class="btn btn-outline btn-traffic-active" type="button" id="toggleTrafficBtn" title="Toggle Real-Time Traffic Conditions">🚦 Traffic: <span id="trafficState">LIVE ON</span></button>
+                    <button class="btn btn-outline" type="button" id="toggleLayerBtn" title="Switch between OpenStreetMap & Cyber Dark styles">🗺️ Switch Style</button>
+                    <span class="map-api-tag" id="mapApiTag" title="Live Free OpenStreetMap API">✓ OpenStreetMap Active</span>
+                </div>
+
+                <!-- Square interactive demo map viewport -->
+                <div class="tow-map-frame" id="mapFrame" role="region" aria-label="Interactive city map">
+                    <div id="towMap"></div>
+                </div>
+
+                <div class="traffic-legend" id="trafficLegend">
+                    <span class="traffic-pill fast"><i class="dot"></i> Fast / Clear</span>
+                    <span class="traffic-pill moderate"><i class="dot"></i> Moderate (+3-5m)</span>
+                    <span class="traffic-pill slow"><i class="dot"></i> Heavy Delay (+8m)</span>
+                </div>
+
+                <p class="tow-map-readout" id="mapReadout" role="status" aria-live="polite">
+                    Tap any truck pin on the map or click "View on Map" below to trace route and ETA.
+                </p>
+            </section>
+
+            <ul class="tow-list" id="towList">
+                <li class="tow-card" data-lat="26.861" data-lng="80.938" tabindex="0">
+                    <div class="tow-top">
+                        <button type="button" class="tow-avatar-btn" title="Locate Neeraj Yadav on map" aria-label="Locate Neeraj Yadav on map">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1.5 16.5V7h10.5v9.5"/>
+                                <path d="M12 10h4.2l3.3 3.5v3H12"/>
+                                <circle cx="6" cy="17.5" r="2"/>
+                                <circle cx="16" cy="17.5" r="2"/>
+                            </svg>
+                        </button>
+                        <div>
+                            <span class="tow-label">Name:</span>
+                            <strong class="tow-name">Neeraj Yadav</strong>
+                        </div>
+                        <span class="tow-distance">-- km</span>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Phone Number:</span>
+                        <a class="tow-phone" href="tel:+919456923238" aria-label="Call Neeraj Yadav on 9456923238">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            9456923238
+                        </a>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Ratings:</span>
+                        <div class="tow-rating-line">
+                            <span class="tow-rating">8/10</span>
+                            <span class="rating-bar" aria-hidden="true"><i style="--r:80%"></i></span>
+                        </div>
+                    </div>
+                    <p class="tow-note">Professionally experienced and provides a smooth ride</p>
+                    <div class="tow-traffic-tag fast">🟢 Clear Route · 0m traffic delay</div>
+                    <div class="tow-card-actions">
+                        <button type="button" class="btn btn-outline tow-select-btn">📍 View on Map</button>
+                        <button type="button" class="btn btn-primary btn-sm tow-dispatch-btn" data-driver-name="Neeraj Yadav (9456923238)" data-driver-phone="9456923238">⚡ Book Tow Truck</button>
+                    </div>
+                </li>
+
+                <li class="tow-card" data-lat="26.825" data-lng="80.990" tabindex="0">
+                    <div class="tow-top">
+                        <button type="button" class="tow-avatar-btn" title="Locate Shivam Shukla on map" aria-label="Locate Shivam Shukla on map">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1.5 16.5V7h10.5v9.5"/>
+                                <path d="M12 10h4.2l3.3 3.5v3H12"/>
+                                <circle cx="6" cy="17.5" r="2"/>
+                                <circle cx="16" cy="17.5" r="2"/>
+                            </svg>
+                        </button>
+                        <div>
+                            <span class="tow-label">Name:</span>
+                            <strong class="tow-name">Shivam Shukla</strong>
+                        </div>
+                        <span class="tow-distance">-- km</span>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Phone Number:</span>
+                        <a class="tow-phone" href="tel:+918965234238" aria-label="Call Shivam Shukla on 8965234238">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            8965234238
+                        </a>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Ratings:</span>
+                        <div class="tow-rating-line">
+                            <span class="tow-rating">7.8/10</span>
+                            <span class="rating-bar" aria-hidden="true"><i style="--r:78%"></i></span>
+                        </div>
+                    </div>
+                    <p class="tow-note">Expert driver for large vehicles &amp; flatbed towing</p>
+                    <div class="tow-traffic-tag moderate">🟡 Moderate Flow · +4m traffic delay</div>
+                    <div class="tow-card-actions">
+                        <button type="button" class="btn btn-outline tow-select-btn">📍 View on Map</button>
+                        <button type="button" class="btn btn-primary btn-sm tow-dispatch-btn" data-driver-name="Shivam Shukla (8965234238)" data-driver-phone="8965234238">⚡ Book Tow Truck</button>
+                    </div>
+                </li>
+
+                <li class="tow-card" data-lat="26.842" data-lng="80.912" tabindex="0">
+                    <div class="tow-top">
+                        <button type="button" class="tow-avatar-btn" title="Locate Sameer Khan on map" aria-label="Locate Sameer Khan on map">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1.5 16.5V7h10.5v9.5"/>
+                                <path d="M12 10h4.2l3.3 3.5v3H12"/>
+                                <circle cx="6" cy="17.5" r="2"/>
+                                <circle cx="16" cy="17.5" r="2"/>
+                            </svg>
+                        </button>
+                        <div>
+                            <span class="tow-label">Name:</span>
+                            <strong class="tow-name">Sameer Khan</strong>
+                        </div>
+                        <span class="tow-distance">-- km</span>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Phone Number:</span>
+                        <a class="tow-phone" href="tel:+918383629470" aria-label="Call Sameer Khan on 8383629470">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            8383629470
+                        </a>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Ratings:</span>
+                        <div class="tow-rating-line">
+                            <span class="tow-rating">10/10</span>
+                            <span class="rating-bar top" aria-hidden="true"><i style="--r:100%"></i></span>
+                        </div>
+                    </div>
+                    <p class="tow-note">Top rated emergency 24/7 rapid roadside assistance</p>
+                    <div class="tow-traffic-tag fast">🟢 Clear Express Route · Fastest ETA</div>
+                    <div class="tow-card-actions">
+                        <button type="button" class="btn btn-outline tow-select-btn">📍 View on Map</button>
+                        <button type="button" class="btn btn-primary btn-sm tow-dispatch-btn" data-driver-name="Sameer Khan (8383629470)" data-driver-phone="8383629470">⚡ Book Tow Truck</button>
+                    </div>
+                </li>
+
+                <li class="tow-card" data-lat="26.890" data-lng="80.965" tabindex="0">
+                    <div class="tow-top">
+                        <button type="button" class="tow-avatar-btn" title="Locate Ajeet Kumar on map" aria-label="Locate Ajeet Kumar on map">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1.5 16.5V7h10.5v9.5"/>
+                                <path d="M12 10h4.2l3.3 3.5v3H12"/>
+                                <circle cx="6" cy="17.5" r="2"/>
+                                <circle cx="16" cy="17.5" r="2"/>
+                            </svg>
+                        </button>
+                        <div>
+                            <span class="tow-label">Name:</span>
+                            <strong class="tow-name">Ajeet Kumar</strong>
+                        </div>
+                        <span class="tow-distance">-- km</span>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Phone Number:</span>
+                        <a class="tow-phone" href="tel:+917642989892" aria-label="Call Ajeet Kumar on 7642989892">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            7642989892
+                        </a>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Ratings:</span>
+                        <div class="tow-rating-line">
+                            <span class="tow-rating">8/10</span>
+                            <span class="rating-bar" aria-hidden="true"><i style="--r:80%"></i></span>
+                        </div>
+                    </div>
+                    <p class="tow-note">Always available and professionally equipped</p>
+                    <div class="tow-traffic-tag slow">🔴 Congestion on Ring Rd · +8m delay</div>
+                    <div class="tow-card-actions">
+                        <button type="button" class="btn btn-outline tow-select-btn">📍 View on Map</button>
+                        <button type="button" class="btn btn-primary btn-sm tow-dispatch-btn" data-driver-name="Ajeet Kumar (7642989892)" data-driver-phone="7642989892">⚡ Book Tow Truck</button>
+                    </div>
+                </li>
+
+                <li class="tow-card" data-lat="26.805" data-lng="80.925" tabindex="0">
+                    <div class="tow-top">
+                        <button type="button" class="tow-avatar-btn" title="Locate Raghu on map" aria-label="Locate Raghu on map">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1.5 16.5V7h10.5v9.5"/>
+                                <path d="M12 10h4.2l3.3 3.5v3H12"/>
+                                <circle cx="6" cy="17.5" r="2"/>
+                                <circle cx="16" cy="17.5" r="2"/>
+                            </svg>
+                        </button>
+                        <div>
+                            <span class="tow-label">Name:</span>
+                            <strong class="tow-name">Raghu</strong>
+                        </div>
+                        <span class="tow-distance">-- km</span>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Phone Number:</span>
+                        <a class="tow-phone" href="tel:+916969325639" aria-label="Call Raghu on 6969325639">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            6969325639
+                        </a>
+                    </div>
+                    <div class="tow-row">
+                        <span class="tow-label">Ratings:</span>
+                        <div class="tow-rating-line">
+                            <span class="tow-rating">8/10</span>
+                            <span class="rating-bar" aria-hidden="true"><i style="--r:80%"></i></span>
+                        </div>
+                    </div>
+                    <p class="tow-note">Heavy vehicle specialist with hydraulic wheel lift</p>
+                    <div class="tow-traffic-tag moderate">🟡 Medium Traffic Flow · +3m delay</div>
+                    <div class="tow-card-actions">
+                        <button type="button" class="btn btn-outline tow-select-btn">📍 View on Map</button>
+                        <button type="button" class="btn btn-primary btn-sm tow-dispatch-btn" data-driver-name="Raghu (6969325639)" data-driver-phone="6969325639">⚡ Book Tow Truck</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- =========================================================
+             TOKEN GENERATOR & PASS VIEWER MODAL
+             ========================================================= -->
+        <div class="vc-modal-backdrop" id="tokenModal" role="dialog" aria-modal="true" aria-labelledby="tokenModalTitle">
+            <div class="vc-modal">
+                <div class="vc-modal-head">
+                    <div class="vc-modal-title">
+                        <span id="modalIcon">🎫</span>
+                        <span id="tokenModalTitle">Digital Service Pass Generator</span>
+                        <span class="vc-modal-title-pill" id="modalSubPill">FAST DISPATCH</span>
+                    </div>
+                    <button type="button" class="vc-modal-close" id="closeTokenModalBtn" aria-label="Close modal">✕</button>
+                </div>
+
+                <!-- Form View -->
+                <div class="vc-modal-body" id="tokenFormView">
+                    <div class="service-tabs" role="tablist">
+                        <button type="button" class="service-tab-btn active" data-tab="TOWING" id="tabTowing">
+                            🚨 Emergency Towing
+                        </button>
+                        <button type="button" class="service-tab-btn" data-tab="TYRE_CHECKUP" id="tabCheckup">
+                            🔍 Tyre Checkup
+                        </button>
+                        <button type="button" class="service-tab-btn" data-tab="TYRE_REPLACEMENT" id="tabReplacement">
+                            🔄 Tyre Replacement
+                        </button>
+                    </div>
+
+                    <form id="tokenGenForm" onsubmit="return false;">
+                        <input type="hidden" id="selectedServiceType" value="TOWING">
+
+                        <div class="token-form-grid">
+                            <!-- App Auto-Generated Token ID Banner -->
+                            <div class="token-auto-banner full">
+                                <div class="auto-banner-info">
+                                    <span class="auto-banner-label">⚡ APP AUTO-GENERATED TOKEN ID</span>
+                                    <div class="auto-banner-code" id="formAutoTokenDisplay">TOW-9410-LKO</div>
+                                    <span class="auto-banner-sub">Unique reservation token generated automatically by Velocheck</span>
+                                </div>
+                                <button type="button" class="btn btn-outline btn-sm" id="formRegenTokenBtn" title="Generate another Token ID">
+                                    🔄 Refresh Token
+                                </button>
+                                <input type="hidden" id="tokenAutoGeneratedId" value="">
+                            </div>
+
+                            <!-- Vehicle Type Selector -->
+                            <div class="token-field full">
+                                <label style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>Select Vehicle Type *</span>
+                                    <span style="font-size:11px; color:var(--signal-cyan); font-weight:normal;" id="selectedVehicleTypeLabel">Selected: Hatchback</span>
+                                </label>
+                                <div class="vehicle-type-chips" id="vehicleTypeChips">
+                                    <button type="button" class="vehicle-chip" data-vehicle="Bike">
+                                        <span>🏍️</span> Bike
+                                    </button>
+                                    <button type="button" class="vehicle-chip" data-vehicle="Heavy Cargo">
+                                        <span>🚛</span> Heavy Cargo
+                                    </button>
+                                    <button type="button" class="vehicle-chip active" data-vehicle="Hatchback">
+                                        <span>🚗</span> Hatchback
+                                    </button>
+                                    <button type="button" class="vehicle-chip" data-vehicle="Mini SUV">
+                                        <span>🚙</span> Mini SUV
+                                    </button>
+                                    <button type="button" class="vehicle-chip" data-vehicle="SUV">
+                                        <span>🚙</span> SUV
+                                    </button>
+                                </div>
+                                <input type="hidden" id="tokenVehicleType" value="Hatchback">
+                            </div>
+
+                            <div class="token-field">
+                                <label for="tokenContactPhone">Your Contact No. *</label>
+                                <input type="tel" id="tokenContactPhone" placeholder="e.g. 9456923238" required maxlength="15">
+                            </div>
+
+                            <div class="token-field">
+                                <label for="tokenVehicleNumber">Vehicle Registration Plate *</label>
+                                <input type="text" id="tokenVehicleNumber" placeholder="e.g. UP32 AW 7094" required maxlength="15" autocomplete="off" style="text-transform: uppercase;">
+                            </div>
+
+                            <!-- Provider Selection (Dynamic based on tab) -->
+                            <div class="token-field full" id="towingDriverField">
+                                <label for="tokenDriverSelect">Select Towing Truck Driver / Dispatch</label>
+                                <select id="tokenDriverSelect">
+                                    <option value="Sameer Khan (8383629470)" data-phone="8383629470" selected>⚡ Sameer Khan · Top Rated (10/10) · Rapid Express ETA ~10m</option>
+                                    <option value="Neeraj Yadav (9456923238)" data-phone="9456923238">Neeraj Yadav · Experienced Smooth Flatbed · ETA ~14m</option>
+                                    <option value="Shivam Shukla (8965234238)" data-phone="8965234238">Shivam Shukla · Heavy Vehicle Flatbed · ETA ~16m</option>
+                                    <option value="Ajeet Kumar (7642989892)" data-phone="7642989892">Ajeet Kumar · 24/7 Roadside Assistance · ETA ~18m</option>
+                                    <option value="Raghu (6969325639)" data-phone="6969325639">Raghu · Hydraulic Wheel Lift Specialist · ETA ~20m</option>
+                                </select>
+                            </div>
+
+                            <div class="token-field full" id="serviceCenterField" style="display:none;">
+                                <label for="tokenCenterSelect">Authorized Velocheck Tyre Center</label>
+                                <select id="tokenCenterSelect">
+                                    <option value="Velocheck Cyber Hub - Hazratganj" selected>🏢 Velocheck Cyber Hub · Hazratganj (Central Diagnostic Bay)</option>
+                                    <option value="Velocheck Authorized Pitstop - Gomti Nagar">⚡ Velocheck Authorized Pitstop · Gomti Nagar (Express Bay 2)</option>
+                                    <option value="Velocheck Diagnostic Station - Alambagh">🛠️ Velocheck Diagnostic Station · Alambagh Hub</option>
+                                    <option value="Velocheck Highway Express Hub - Shaheed Path">🛣️ Velocheck Highway Express · Shaheed Path Corridor</option>
+                                </select>
+                            </div>
+
+                            <!-- Tyre Checkup Options -->
+                            <div class="token-field full" id="checkupOptionsField" style="display:none;">
+                                <label>Diagnostic Scope (All Included in Pass)</label>
+                                <div class="scope-chips">
+                                    <label class="scope-chip"><input type="checkbox" checked disabled> 🔬 3D Laser Tread Depth Scan</label>
+                                    <label class="scope-chip"><input type="checkbox" checked disabled> 📟 TPMS Pressure Sensor Calibration</label>
+                                    <label class="scope-chip"><input type="checkbox" checked disabled> ⚖️ Dynamic Wheel Balance Check</label>
+                                    <label class="scope-chip"><input type="checkbox" checked disabled> 🔍 Bead &amp; Micro-Puncture Leak Test</label>
+                                </div>
+                            </div>
+
+                            <!-- Tyre Replacement Options -->
+                            <div class="token-field full" id="replacementOptionsField" style="display:none;">
+                                <label>Tyre Axle Replacement Scope</label>
+                                <div class="scope-chips">
+                                    <label class="scope-chip"><input type="radio" name="tyreAxle" value="All 4 Tyres (Full Overhaul)" checked> All 4 Tyres (Full Set)</label>
+                                    <label class="scope-chip"><input type="radio" name="tyreAxle" value="Front Axle Pair (FL + FR)"> Front Pair (FL + FR)</label>
+                                    <label class="scope-chip"><input type="radio" name="tyreAxle" value="Rear Axle Pair (RL + RR)"> Rear Pair (RL + RR)</label>
+                                    <label class="scope-chip"><input type="radio" name="tyreAxle" value="Single Emergency Spare"> Single Spare</label>
+                                </div>
+
+                                <label style="margin-top:10px;">Select Tyre Brand / Performance Spec</label>
+                                <select id="tokenTyreBrandSelect" style="margin-top:4px;">
+                                    <option value="Bridgestone Turanza 195/65 R15 (High Comfort &amp; Wet Grip)" selected>Bridgestone Turanza 195/65 R15 (Comfort &amp; Wet Grip)</option>
+                                    <option value="Michelin Primacy 4 (Ultra Low Rolling Resistance)">Michelin Primacy 4 (Premium Longevity &amp; Silence)</option>
+                                    <option value="MRF Wanderer Eco (All-Terrain Heavy Duty)">MRF Wanderer Eco (All-Terrain Heavy Duty)</option>
+                                    <option value="Apollo Alnac 4G (High Mileage Long Life)">Apollo Alnac 4G (High Mileage Long Life)</option>
+                                </select>
+                                <span style="font-size:11px; color:var(--signal-green); margin-top:4px; display:block;">✓ Complimentary Nitrogen fill &amp; high-speed balancing included with token</span>
+                            </div>
+
+                            <!-- Slot / Timing -->
+                            <div class="token-field full">
+                                <label for="tokenTimeSlot">Service Slot / Dispatch Time</label>
+                                <select id="tokenTimeSlot">
+                                    <option value="IMMEDIATE" selected>🚨 Immediate Emergency Dispatch (Now · Priority 1)</option>
+                                    <option value="TODAY_AFTERNOON">Today Afternoon · 2:30 PM - 3:30 PM</option>
+                                    <option value="TODAY_EVENING">Today Evening · 5:00 PM - 6:00 PM</option>
+                                    <option value="TOMORROW_MORNING">Tomorrow Morning · 10:00 AM - 11:00 AM</option>
+                                    <option value="TOMORROW_AFTERNOON">Tomorrow Afternoon · 2:00 PM - 3:00 PM</option>
+                                </select>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="token-field full">
+                                <label for="tokenLocation">Pickup / Service Bay Location</label>
+                                <div style="display:flex; gap:8px;">
+                                    <input type="text" id="tokenLocation" value="Hazratganj, Lucknow (GPS Lock: 26.8467° N, 80.9462° E)" style="flex:1;">
+                                    <button type="button" class="btn btn-outline btn-sm" id="tokenDetectLocationBtn" title="Detect GPS">📍 Detect GPS</button>
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="token-field full">
+                                <label for="tokenNotes">Special Instructions / Issue Description (Optional)</label>
+                                <input type="text" id="tokenNotes" placeholder="e.g. Front-right flat tyre, vehicle parked near road milestone">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 18px; display:flex; gap:10px;">
+                            <button type="submit" class="btn btn-primary" id="generateTokenSubmitBtn" style="flex:1; padding: 12px 18px; font-size:14px;">
+                                ⚡ GENERATE SECURE DIGITAL PASS
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Pass Card View (Rendered once token generated) -->
+                <div class="vc-modal-body" id="tokenPassCardView" style="display:none;">
+                    <div class="cyber-pass-card" id="printablePassCard">
+                        <div class="pass-header">
+                            <div class="pass-brand">
+                                <span class="mark" style="width:24px; height:24px; border-radius:6px;"></span>
+                                <span class="pass-brand-tag">VELOCHECK PASS</span>
+                            </div>
+                            <span class="pass-status-pill" id="cardStatusPill">
+                                <i class="dot"></i> <span id="cardStatusText">CONFIRMED &amp; ACTIVE</span>
+                            </span>
+                        </div>
+
+                        <div class="pass-code-banner">
+                            <span class="pass-code-label">OFFICIAL SERVICE TOKEN ID</span>
+                            <div class="pass-code-value" id="cardTokenCode">TOW-9140-LKO</div>
+                            <button type="button" class="pass-copy-btn" id="copyTokenCodeBtn">📋 Copy Token</button>
+                        </div>
+
+                        <div class="pass-pin-box">
+                            <div class="pass-pin-info">
+                                <strong>🔐 SECURITY VERIFICATION PIN</strong>
+                                <span>Show this 4-digit PIN to driver/technician on arrival</span>
+                            </div>
+                            <div class="pass-pin-number" id="cardSecurityPin">7419</div>
+                        </div>
+
+                        <div class="pass-barcode-wrap">
+                            <div class="pass-barcode" title="Encrypted Digital Security Barcode">
+                                <div class="pass-laser-line"></div>
+                            </div>
+                            <span style="font-size:10px; color:var(--text-tertiary); letter-spacing:2px; margin-top:4px;">SECURE VERIFIED TELEMETRY DISPATCH MATRIX</span>
+                        </div>
+
+                        <div class="pass-details-grid">
+                            <div class="pass-detail-item">
+                                <span class="k">Service Category</span>
+                                <span class="v cyan" id="cardServiceType">EMERGENCY TOWING</span>
+                            </div>
+                            <div class="pass-detail-item">
+                                <span class="k">Vehicle Type</span>
+                                <span class="v" id="cardVehicleType" style="color:var(--signal-cyan);">Hatchback</span>
+                            </div>
+                            <div class="pass-detail-item">
+                                <span class="k">Vehicle Registration</span>
+                                <span class="v" id="cardVehicleReg">UP32 AW 7094</span>
+                            </div>
+                            <div class="pass-detail-item">
+                                <span class="k">Your Contact No.</span>
+                                <span class="v" id="cardContactPhone">9456923238</span>
+                            </div>
+                            <div class="pass-detail-item">
+                                <span class="k">Assigned Provider / Bay</span>
+                                <span class="v" id="cardProviderName">Sameer Khan (8383629470)</span>
+                            </div>
+                            <div class="pass-detail-item">
+                                <span class="k">Service Slot / ETA</span>
+                                <span class="v" id="cardSlotTime">Immediate Dispatch (ETA ~12 mins)</span>
+                            </div>
+                            <div class="pass-detail-item" style="grid-column: 1 / -1;">
+                                <span class="k">Service Address / Location</span>
+                                <span class="v" id="cardLocation">Hazratganj, Lucknow (GPS Lock: 26.8467° N, 80.9462° E)</span>
+                            </div>
+                            <div class="pass-detail-item" id="cardNotesRow" style="grid-column: 1 / -1; display:none;">
+                                <span class="k">Notes / Instructions</span>
+                                <span class="v" id="cardNotes" style="font-size:12.5px; color:var(--text-secondary);"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pass-actions" style="display:flex; gap:10px; margin-top:6px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" id="printPassBtn" style="flex:1;">
+                            🖨️ Print / Save Pass
+                        </button>
+                        <button type="button" class="btn btn-outline" id="cancelPassBtn" style="color:var(--signal-red); border-color:rgba(255,51,102,0.4);">
+                            ✕ Cancel Booking
+                        </button>
+                        <button type="button" class="btn btn-outline" id="bookAnotherPassBtn">
+                            ➕ Book Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             MY ACTIVE PASSES MODAL
+             ========================================================= -->
+        <div class="vc-modal-backdrop" id="myTokensModal" role="dialog" aria-modal="true" aria-labelledby="myTokensTitle">
+            <div class="vc-modal">
+                <div class="vc-modal-head">
+                    <div class="vc-modal-title">
+                        <span>📋</span>
+                        <span id="myTokensTitle">My Service Passes &amp; Bookings</span>
+                    </div>
+                    <button type="button" class="vc-modal-close" id="closeMyTokensModalBtn" aria-label="Close modal">✕</button>
+                </div>
+                <div class="vc-modal-body">
+                    <div class="my-tokens-list" id="myTokensListContainer">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                        <button type="button" class="btn btn-primary btn-sm" id="newPassFromListBtn">
+                            ➕ Generate New Pass
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /* ---------------------------------------------------------
+           VELOCHECK Interactive Map Engine — OpenStreetMap Native
+           - Full OpenStreetMap Standard integration with {s} subdomains
+           - CORS and referrerPolicy configuration to avoid tile blockage
+           - Automatic cascading fallback (OSM Standard -> OSM HOT -> CartoDB -> Esri)
+           - Responsive layout auto-invalidation and error recovery
+           --------------------------------------------------------- */
+        (function() {
+            const DEFAULT_CENTER = [26.8467, 80.9462]; // Lucknow Hazratganj
+            const readout = document.getElementById("mapReadout");
+            const locateBtn = document.getElementById("locateBtn");
+            const toggleLayerBtn = document.getElementById("toggleLayerBtn");
+            const mapApiTag = document.getElementById("mapApiTag");
+            const cards = Array.from(document.querySelectorAll("#towList .tow-card"));
+
+            let userCoords = [DEFAULT_CENTER[0], DEFAULT_CENTER[1]];
+            let usingRealLocation = false;
+            let selectedIndex = -1;
+            let mapInstance = null;
+            let currentTileLayer = null;
+
+            const toggleTrafficBtn = document.getElementById("toggleTrafficBtn");
+            const trafficState = document.getElementById("trafficState");
+            const trafficLegend = document.getElementById("trafficLegend");
+            let trafficEnabled = true;
+
+            const trafficProfiles = [
+                { status: "Clear", delay: 0, color: "#00e676", tag: "Clear Flow (No Delay)", road: "MG Marg Expressway" },
+                { status: "Moderate", delay: 4, color: "#ffb300", tag: "Moderate (+4m delay)", road: "Faizabad Rd Corridor" },
+                { status: "Clear", delay: 0, color: "#00e676", tag: "Clear Route (Fastest ETA)", road: "Hazratganj Direct" },
+                { status: "Congested", delay: 8, color: "#ff3366", tag: "Congestion (+8m delay)", road: "Shaheed Path Ring Rd" },
+                { status: "Moderate", delay: 3, color: "#ffb300", tag: "Medium Flow (+3m delay)", road: "Kanpur Rd Link" }
+            ];
+
+            const trucks = cards.map(function (card, i) {
+                return {
+                    index: i,
+                    card: card,
+                    name: card.querySelector(".tow-name").textContent.trim(),
+                    lat: parseFloat(card.dataset.lat),
+                    lng: parseFloat(card.dataset.lng),
+                    phone: card.querySelector(".tow-phone").textContent.trim(),
+                    rating: card.querySelector(".tow-rating").textContent.trim(),
+                    note: card.querySelector(".tow-note").textContent.trim(),
+                    traffic: trafficProfiles[i] || { status: "Normal", delay: 0, color: "#00e676", tag: "Normal Flow", road: "City Route" },
+                    km: 0
+                };
+            });
+
+            function haversineKm(lat1, lon1, lat2, lon2) {
+                const R = 6371, rad = Math.PI / 180;
+                const dLat = (lat2 - lat1) * rad, dLng = (lon2 - lon1) * rad;
+                const h = Math.sin(dLat / 2) ** 2 +
+                    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) ** 2;
+                return 2 * R * Math.asin(Math.sqrt(h));
+            }
+
+            function updateDistances() {
+                trucks.forEach(function (t) {
+                    t.km = haversineKm(userCoords[0], userCoords[1], t.lat, t.lng);
+                    const distEl = t.card.querySelector(".tow-distance");
+                    if (distEl) distEl.textContent = t.km.toFixed(1) + " km";
+                });
+            }
+
+            function initMap() {
+                if (typeof L === 'undefined') {
+                    console.warn("Leaflet library not ready yet, retrying...");
+                    setTimeout(initMap, 200);
+                    return;
+                }
+
+                const mapContainer = document.getElementById("towMap");
+                if (!mapContainer) return;
+
+                try {
+                    // Create Leaflet Map Instance
+                    mapInstance = L.map("towMap", {
+                        center: DEFAULT_CENTER,
+                        zoom: 12,
+                        minZoom: 4,
+                        maxZoom: 19,
+                        zoomControl: true,
+                        attributionControl: true
+                    });
+
+                    // 1. Primary: OpenStreetMap Standard Street CDN (CARTO Voyager - 100% Unblocked OSM)
+                    const osmVoyager = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+                        subdomains: ["a", "b", "c", "d"],
+                        maxZoom: 19,
+                        crossOrigin: true,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/" target="_blank">CARTO</a>'
+                    });
+
+                    // 2. Velocheck Cyber Dark Theme (CARTO Dark Matter - OSM Based)
+                    const cartoDark = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+                        subdomains: ["a", "b", "c", "d"],
+                        maxZoom: 19,
+                        crossOrigin: true,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/" target="_blank">CARTO</a>'
+                    });
+
+                    // 3. World Street Map (Esri Global Street Navigation)
+                    const esriNav = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+                        maxZoom: 18,
+                        attribution: 'Tiles &copy; Esri &mdash; Street Map'
+                    });
+
+                    // 4. Clean Minimalist Light (CARTO Positron - OSM Based)
+                    const osmLight = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+                        subdomains: ["a", "b", "c", "d"],
+                        maxZoom: 19,
+                        crossOrigin: true,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+                    });
+
+                    // 5. Live Real-Time Traffic Flow Layer (Transparent Overlay)
+                    const trafficOverlay = L.tileLayer("https://mt{s}.google.com/vt?lyrs=h,traffic&x={x}&y={y}&z={z}", {
+                        subdomains: ["0", "1", "2", "3"],
+                        maxZoom: 19,
+                        opacity: 0.88,
+                        attribution: 'Live Traffic &copy; Real-Time Navigation Flow'
+                    });
+
+                    // Activate OpenStreetMap Voyager by default (Fast, Crisp & Never Blocked)
+                    osmVoyager.addTo(mapInstance);
+                    currentTileLayer = osmVoyager;
+
+                    // Activate Live Traffic Overlay
+                    trafficOverlay.addTo(mapInstance);
+
+                    if (mapApiTag) {
+                        mapApiTag.textContent = "✓ OpenStreetMap + Live Traffic";
+                        mapApiTag.style.borderColor = "var(--signal-cyan)";
+                    }
+
+                    // Auto-fallback: If any tile error occurs, automatically switch to Cyber Dark
+                    osmVoyager.on("tileerror", function() {
+                        if (mapInstance.hasLayer(osmVoyager)) {
+                            console.warn("Switching to Cyber Dark OSM fallback...");
+                            mapInstance.removeLayer(osmVoyager);
+                            cartoDark.addTo(mapInstance);
+                            currentTileLayer = cartoDark;
+                            if (mapApiTag) mapApiTag.textContent = "✓ Cyber Dark (OSM)";
+                        }
+                    });
+
+                    cartoDark.on("tileerror", function() {
+                        if (mapInstance.hasLayer(cartoDark)) {
+                            console.warn("Switching to Esri Street Navigation fallback...");
+                            mapInstance.removeLayer(cartoDark);
+                            esriNav.addTo(mapInstance);
+                            currentTileLayer = esriNav;
+                            if (mapApiTag) mapApiTag.textContent = "✓ Esri Navigation";
+                        }
+                    });
+
+                    // Interactive Layer Switcher Control (top-right of map)
+                    const baseMaps = {
+                        "🗺️ OpenStreetMap (Voyager)": osmVoyager,
+                        "🌙 Velocheck Cyber Dark": cartoDark,
+                        "🌐 World Street Map (Esri)": esriNav,
+                        "☀️ Clean Light (Positron)": osmLight
+                    };
+                    const overlayMaps = {
+                        "🚦 Live Traffic Flow": trafficOverlay
+                    };
+                    L.control.layers(baseMaps, overlayMaps, { position: "topright" }).addTo(mapInstance);
+
+                    // Toggle Map Style Button
+                    if (toggleLayerBtn) {
+                        let layerIdx = 0;
+                        const layerList = [
+                            { layer: osmVoyager, label: "✓ OpenStreetMap Active" },
+                            { layer: cartoDark, label: "✓ Cyber Dark (OSM)" },
+                            { layer: esriNav, label: "✓ World Street Map" },
+                            { layer: osmLight, label: "✓ Clean Light (OSM)" }
+                        ];
+                        toggleLayerBtn.addEventListener("click", function() {
+                            layerIdx = (layerIdx + 1) % layerList.length;
+                            const next = layerList[layerIdx];
+                            [osmVoyager, cartoDark, esriNav, osmLight].forEach(function(l) {
+                                if (mapInstance.hasLayer(l)) mapInstance.removeLayer(l);
+                            });
+                            next.layer.addTo(mapInstance);
+                            currentTileLayer = next.layer;
+                            if (mapApiTag) mapApiTag.textContent = next.label;
+                        });
+                    }
+
+                    // Toggle Live Traffic Button
+                    if (toggleTrafficBtn) {
+                        toggleTrafficBtn.addEventListener("click", function() {
+                            trafficEnabled = !trafficEnabled;
+                            if (trafficEnabled) {
+                                trafficOverlay.addTo(mapInstance);
+                                toggleTrafficBtn.classList.add("btn-traffic-active");
+                                if (trafficState) trafficState.textContent = "LIVE ON";
+                                if (trafficLegend) trafficLegend.style.display = "flex";
+                            } else {
+                                if (mapInstance.hasLayer(trafficOverlay)) mapInstance.removeLayer(trafficOverlay);
+                                toggleTrafficBtn.classList.remove("btn-traffic-active");
+                                if (trafficState) trafficState.textContent = "OFF";
+                                if (trafficLegend) trafficLegend.style.display = "none";
+                            }
+                            if (selectedIndex >= 0) {
+                                selectDriver(selectedIndex, false);
+                            }
+                        });
+                    }
+
+                    // User Beacon Marker ("YOU")
+                    const userIcon = L.divIcon({
+                        className: "",
+                        html: '<div class="user-marker-wrap"><div class="user-marker-pulse"></div><div class="user-marker-dot"></div></div>',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16]
+                    });
+                    const userMarker = L.marker(DEFAULT_CENTER, { icon: userIcon }).addTo(mapInstance);
+                    userMarker.bindTooltip("<strong>YOUR LOCATION</strong>", { permanent: false, direction: "top", offset: [0, -10] });
+
+                    // Truck Markers (1 to 5)
+                    let routeGlow = null;
+                    let routeLine = null;
+
+                    trucks.forEach(function (t) {
+                        const iconHtml = '<div class="driver-marker-wrap" id="marker-' + t.index + '" style="border-color:' + t.traffic.color + '; color:' + t.traffic.color + ';">' + (t.index + 1) + '</div>';
+                        const driverIcon = L.divIcon({
+                            className: "",
+                            html: iconHtml,
+                            iconSize: [36, 36],
+                            iconAnchor: [18, 18]
+                        });
+
+                        const marker = L.marker([t.lat, t.lng], { icon: driverIcon }).addTo(mapInstance);
+                        marker.bindTooltip("<strong>" + t.name + "</strong> · #" + (t.index + 1) + " (" + t.traffic.status + ")", {
+                            direction: "top",
+                            offset: [0, -16]
+                        });
+
+                        const popupContent =
+                            '<div class="map-popup-head">' + t.name + '</div>' +
+                            '<div class="map-popup-sub">⭐ ' + t.rating + ' · Truck #' + (t.index + 1) + '</div>' +
+                            '<div style="margin:5px 0; font-size:11.5px; font-weight:700; color:' + t.traffic.color + ';">🚦 ' + t.traffic.tag + '</div>' +
+                            '<div style="font-size:11px; color:#627285; margin-bottom:5px;">Via ' + t.traffic.road + '</div>' +
+                            '<p style="font-size:12px; color:#94a3b8; margin: 4px 0 8px;">' + t.note + '</p>' +
+                            '<a class="map-popup-btn" href="tel:' + t.phone + '">📞 Call ' + t.phone + '</a>';
+
+                        marker.bindPopup(popupContent, { offset: [0, -14] });
+
+                        marker.on("click", function () {
+                            selectDriver(t.index, true);
+                        });
+
+                        t.marker = marker;
+                    });
+
+                    function selectDriver(index, panToDriver) {
+                        selectedIndex = index;
+                        const t = trucks[index];
+
+                        // Highlight Cards and Markers
+                        trucks.forEach(function (trk) {
+                            const isSelected = trk.index === index;
+                            trk.card.classList.toggle("selected", isSelected);
+                            const elMarker = document.getElementById("marker-" + trk.index);
+                            if (elMarker) {
+                                elMarker.classList.toggle("selected", isSelected);
+                            }
+                        });
+
+                        // Draw Route Polyline with traffic coloring
+                        if (routeGlow) mapInstance.removeLayer(routeGlow);
+                        if (routeLine) mapInstance.removeLayer(routeLine);
+
+                        const pathCoords = [
+                            userCoords,
+                            [(userCoords[0] + t.lat) / 2, (userCoords[1] + t.lng) / 2],
+                            [t.lat, t.lng]
+                        ];
+
+                        const routeColor = trafficEnabled ? t.traffic.color : "#00e5ff";
+
+                        routeGlow = L.polyline(pathCoords, {
+                            color: routeColor,
+                            weight: 8,
+                            opacity: 0.38,
+                            lineCap: "round",
+                            lineJoin: "round"
+                        }).addTo(mapInstance);
+
+                        routeLine = L.polyline(pathCoords, {
+                            color: routeColor,
+                            weight: 3.8,
+                            opacity: 0.95,
+                            dashArray: "8, 6",
+                            lineCap: "round",
+                            lineJoin: "round"
+                        }).addTo(mapInstance);
+
+                        // Dynamic ETA Calculation factoring in Traffic
+                        const baseEta = Math.max(3, Math.round(t.km * 2.4));
+                        const delay = trafficEnabled ? t.traffic.delay : 0;
+                        const totalEta = baseEta + delay;
+
+                        const trafficBadge = trafficEnabled
+                            ? (delay > 0 
+                                ? "<span style=\"color:#ffb300; font-weight:700;\">(+" + delay + "m " + t.traffic.status + " traffic on " + t.traffic.road + ")</span>"
+                                : "<span style=\"color:#00e676; font-weight:700;\">(Smooth route via " + t.traffic.road + ")</span>")
+                            : "<span style=\"color:var(--text-secondary); font-size:12px;\">(Traffic OFF)</span>";
+
+                        readout.innerHTML = "<strong>" + t.name + "</strong> is " + t.km.toFixed(1) +
+                            " km away · <span style=\"color:" + routeColor + "; font-weight:700;\">ETA: ~" + totalEta + " mins</span> " +
+                            trafficBadge + " · Phone: " + t.phone;
+
+                        if (panToDriver && t.marker) {
+                            t.marker.openPopup();
+                            const bounds = L.latLngBounds([userCoords, [t.lat, t.lng]]);
+                            mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+                        }
+                    }
+
+                    // Attach selection events to driver cards
+                    cards.forEach(function (card, i) {
+                        card.addEventListener("click", function (e) {
+                            if (e.target.closest("a")) return;
+                            selectDriver(i, true);
+                        });
+
+                        const selectBtn = card.querySelector(".tow-select-btn");
+                        if (selectBtn) {
+                            selectBtn.addEventListener("click", function (e) {
+                                e.stopPropagation();
+                                selectDriver(i, true);
+                                document.getElementById("mapFrame").scrollIntoView({ behavior: "smooth", block: "nearest" });
+                            });
+                        }
+
+                        const avatarBtn = card.querySelector(".tow-avatar-btn");
+                        if (avatarBtn) {
+                            avatarBtn.addEventListener("click", function (e) {
+                                e.stopPropagation();
+                                selectDriver(i, true);
+                                document.getElementById("mapFrame").scrollIntoView({ behavior: "smooth", block: "nearest" });
+                            });
+                        }
+
+                        card.addEventListener("keydown", function (e) {
+                            if (e.target === card && (e.key === "Enter" || e.key === " ")) {
+                                e.preventDefault();
+                                selectDriver(i, true);
+                            }
+                        });
+                    });
+
+                    // Geolocation logic
+                    if (locateBtn) {
+                        locateBtn.addEventListener("click", function () {
+                            if (!navigator.geolocation) {
+                                readout.textContent = "Geolocation is not supported by your browser.";
+                                return;
+                            }
+                            readout.textContent = "Detecting your live GPS location...";
+                            navigator.geolocation.getCurrentPosition(
+                                function (pos) {
+                                    userCoords = [pos.coords.latitude, pos.coords.longitude];
+                                    usingRealLocation = true;
+                                    userMarker.setLatLng(userCoords);
+                                    updateDistances();
+                                    mapInstance.setView(userCoords, 13);
+                                    readout.innerHTML = "📍 GPS location found! Showing nearest towing trucks around you.";
+                                    if (selectedIndex >= 0) {
+                                        selectDriver(selectedIndex, true);
+                                    }
+                                },
+                                function (err) {
+                                    readout.textContent = err.code === 1
+                                        ? "Location permission denied. Showing Lucknow demo map."
+                                        : "Unable to retrieve GPS. Showing Lucknow demo map.";
+                                },
+                                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                            );
+                        });
+                    }
+
+                    // Invalidate map size to prevent gray tiles or misaligned viewports
+                    setTimeout(function () { if (mapInstance) mapInstance.invalidateSize(); }, 150);
+                    setTimeout(function () { if (mapInstance) mapInstance.invalidateSize(); }, 600);
+                    window.addEventListener("resize", function() {
+                        if (mapInstance) mapInstance.invalidateSize();
+                    });
+
+                } catch (err) {
+                    console.error("Map initialization failed:", err);
+                    renderOfflineFallback();
+                }
+            }
+
+            // Emergency Offline Fallback if Leaflet fails or CDN is blocked
+            function renderOfflineFallback() {
+                const mapContainer = document.getElementById("towMap");
+                if (!mapContainer) return;
+                mapContainer.innerHTML = 
+                    '<div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; background:#0b111b; color:#94a3b8;">' +
+                    '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="1.8" style="margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>' +
+                    '<h4 style="color:#fff; margin-bottom:6px; font-family:var(--font-display); letter-spacing:1px;">Interactive Radar Active</h4>' +
+                    '<p style="font-size:13px; max-width:280px; margin-bottom:12px;">Map tiles are loading or in offline mode. Nearby trucks are active below.</p>' +
+                    '<button class="btn btn-outline" onclick="location.reload()" style="font-size:11px; padding:6px 12px;">↻ Reload Map</button>' +
+                    '</div>';
+                if (mapApiTag) mapApiTag.textContent = "Radar Mode";
+            }
+
+            // Start initialization once DOM is ready
+            updateDistances();
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initMap);
+            } else {
+                initMap();
+            }
+        })();
+    </script>
+
+    <!-- =========================================================
+         VELOCHECK TOKEN GENERATION & SERVICE PASS CONTROLLER
+         ========================================================= -->
+    <script>
+        (function() {
+            // Modals
+            const tokenModal = document.getElementById("tokenModal");
+            const myTokensModal = document.getElementById("myTokensModal");
+            const closeTokenModalBtn = document.getElementById("closeTokenModalBtn");
+            const closeMyTokensModalBtn = document.getElementById("closeMyTokensModalBtn");
+            const openTokenModalBtn = document.getElementById("openTokenModalBtn");
+            const openMyTokensBtn = document.getElementById("openMyTokensBtn");
+            const tokenCountBadge = document.getElementById("tokenCountBadge");
+            const newPassFromListBtn = document.getElementById("newPassFromListBtn");
+
+            // Modal Views
+            const tokenFormView = document.getElementById("tokenFormView");
+            const tokenPassCardView = document.getElementById("tokenPassCardView");
+            const tokenGenForm = document.getElementById("tokenGenForm");
+            const tokenModalTitle = document.getElementById("tokenModalTitle");
+            const modalSubPill = document.getElementById("modalSubPill");
+            const modalIcon = document.getElementById("modalIcon");
+
+            // Service Tabs
+            const tabTowing = document.getElementById("tabTowing");
+            const tabCheckup = document.getElementById("tabCheckup");
+            const tabReplacement = document.getElementById("tabReplacement");
+            const selectedServiceType = document.getElementById("selectedServiceType");
+
+            // Dynamic Form Fields
+            const towingDriverField = document.getElementById("towingDriverField");
+            const serviceCenterField = document.getElementById("serviceCenterField");
+            const checkupOptionsField = document.getElementById("checkupOptionsField");
+            const replacementOptionsField = document.getElementById("replacementOptionsField");
+
+            const tokenVehicleNumber = document.getElementById("tokenVehicleNumber");
+            const tokenContactPhone = document.getElementById("tokenContactPhone");
+            const tokenDriverSelect = document.getElementById("tokenDriverSelect");
+            const tokenCenterSelect = document.getElementById("tokenCenterSelect");
+            const tokenTimeSlot = document.getElementById("tokenTimeSlot");
+            const tokenLocation = document.getElementById("tokenLocation");
+            const tokenNotes = document.getElementById("tokenNotes");
+            const tokenDetectLocationBtn = document.getElementById("tokenDetectLocationBtn");
+            const generateTokenSubmitBtn = document.getElementById("generateTokenSubmitBtn");
+
+            // Vehicle Type & Auto-Generated Token Elements
+            const formAutoTokenDisplay = document.getElementById("formAutoTokenDisplay");
+            const formRegenTokenBtn = document.getElementById("formRegenTokenBtn");
+            const tokenAutoGeneratedId = document.getElementById("tokenAutoGeneratedId");
+            const tokenVehicleType = document.getElementById("tokenVehicleType");
+            const vehicleTypeChips = document.querySelectorAll("#vehicleTypeChips .vehicle-chip");
+            const selectedVehicleTypeLabel = document.getElementById("selectedVehicleTypeLabel");
+
+            // Card Elements
+            const cardTokenCode = document.getElementById("cardTokenCode");
+            const cardSecurityPin = document.getElementById("cardSecurityPin");
+            const cardServiceType = document.getElementById("cardServiceType");
+            const cardVehicleType = document.getElementById("cardVehicleType");
+            const cardVehicleReg = document.getElementById("cardVehicleReg");
+            const cardContactPhone = document.getElementById("cardContactPhone");
+            const cardProviderName = document.getElementById("cardProviderName");
+            const cardSlotTime = document.getElementById("cardSlotTime");
+            const cardLocation = document.getElementById("cardLocation");
+            const cardNotesRow = document.getElementById("cardNotesRow");
+            const cardNotes = document.getElementById("cardNotes");
+            const cardStatusPill = document.getElementById("cardStatusPill");
+            const cardStatusText = document.getElementById("cardStatusText");
+
+            // Pass Action Buttons
+            const copyTokenCodeBtn = document.getElementById("copyTokenCodeBtn");
+            const printPassBtn = document.getElementById("printPassBtn");
+            const cancelPassBtn = document.getElementById("cancelPassBtn");
+            const bookAnotherPassBtn = document.getElementById("bookAnotherPassBtn");
+
+            let currentActiveToken = null;
+
+            // Generate auto token ID for booking preview
+            function generateClientTokenId(serviceType = "TOWING") {
+                const prefixMap = {
+                    "TOWING": "TOW",
+                    "TYRE_CHECKUP": "CHK",
+                    "TYRE_REPLACEMENT": "REP"
+                };
+                const prefix = prefixMap[serviceType] || "TOW";
+                const num = Math.floor(1000 + Math.random() * 9000);
+                return `${prefix}-${num}-LKO`;
+            }
+
+            function refreshAutoToken(serviceType) {
+                const st = serviceType || selectedServiceType.value || "TOWING";
+                const newToken = generateClientTokenId(st);
+                if (formAutoTokenDisplay) formAutoTokenDisplay.textContent = newToken;
+                if (tokenAutoGeneratedId) tokenAutoGeneratedId.value = newToken;
+                return newToken;
+            }
+
+            function setVehicleType(type) {
+                if (tokenVehicleType) tokenVehicleType.value = type;
+                if (selectedVehicleTypeLabel) selectedVehicleTypeLabel.textContent = `Selected: ${type}`;
+                vehicleTypeChips.forEach(chip => {
+                    if (chip.dataset.vehicle === type) {
+                        chip.classList.add("active");
+                    } else {
+                        chip.classList.remove("active");
+                    }
+                });
+            }
+
+            // Load user vehicle and phone defaults
+            function loadDefaults() {
+                try {
+                    const userStr = sessionStorage.getItem("velocheck_user");
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        if (user.phone && tokenContactPhone) {
+                            tokenContactPhone.value = user.phone.replace('+91', '');
+                        }
+                    }
+                } catch(e) {}
+
+                const savedVeh = localStorage.getItem("velocheck_active_vehicle") || "UP32 AW 7094";
+                if (tokenVehicleNumber && !tokenVehicleNumber.value) {
+                    tokenVehicleNumber.value = savedVeh;
+                }
+            }
+
+            // Update Badge Count
+            async function updatePassBadge() {
+                try {
+                    const tokens = await VelocheckAuth.getMyServiceTokens();
+                    const activeCount = tokens.filter(t => t.status !== 'CANCELLED').length;
+                    if (tokenCountBadge) tokenCountBadge.textContent = activeCount;
+                } catch (e) {
+                    const local = VelocheckAuth.getLocalTokens();
+                    const activeCount = local.filter(t => t.status !== 'CANCELLED').length;
+                    if (tokenCountBadge) tokenCountBadge.textContent = activeCount;
+                }
+            }
+
+            // Tab Switcher
+            function switchServiceTab(type, driverName) {
+                selectedServiceType.value = type;
+                refreshAutoToken(type);
+
+                // Reset tab button states
+                [tabTowing, tabCheckup, tabReplacement].forEach(b => b.classList.remove("active"));
+
+                if (type === "TOWING") {
+                    tabTowing.classList.add("active");
+                    modalIcon.textContent = "🚨";
+                    tokenModalTitle.textContent = "Emergency Towing Dispatch Pass";
+                    modalSubPill.textContent = "RAPID FLEET";
+                    modalSubPill.style.color = "var(--signal-cyan)";
+                    modalSubPill.style.borderColor = "var(--signal-cyan)";
+
+                    towingDriverField.style.display = "flex";
+                    serviceCenterField.style.display = "none";
+                    checkupOptionsField.style.display = "none";
+                    replacementOptionsField.style.display = "none";
+
+                    if (driverName) {
+                        for (let opt of tokenDriverSelect.options) {
+                            if (opt.value.toLowerCase().includes(driverName.toLowerCase())) {
+                                opt.selected = true;
+                                break;
+                            }
+                        }
+                    }
+                } else if (type === "TYRE_CHECKUP") {
+                    tabCheckup.classList.add("active");
+                    modalIcon.textContent = "🔍";
+                    tokenModalTitle.textContent = "Service Center: Tyre Checkup Pass";
+                    modalSubPill.textContent = "DIAGNOSTIC BAY";
+                    modalSubPill.style.color = "var(--signal-amber)";
+                    modalSubPill.style.borderColor = "var(--signal-amber)";
+
+                    towingDriverField.style.display = "none";
+                    serviceCenterField.style.display = "flex";
+                    checkupOptionsField.style.display = "flex";
+                    replacementOptionsField.style.display = "none";
+                } else if (type === "TYRE_REPLACEMENT") {
+                    tabReplacement.classList.add("active");
+                    modalIcon.textContent = "🔄";
+                    tokenModalTitle.textContent = "Service Center: Tyre Replacement Pass";
+                    modalSubPill.textContent = "WHEEL BAY";
+                    modalSubPill.style.color = "var(--signal-green)";
+                    modalSubPill.style.borderColor = "var(--signal-green)";
+
+                    towingDriverField.style.display = "none";
+                    serviceCenterField.style.display = "flex";
+                    checkupOptionsField.style.display = "none";
+                    replacementOptionsField.style.display = "flex";
+                }
+            }
+
+            // Open Generator Modal
+            function openModal(serviceType = "TOWING", driverName = null) {
+                loadDefaults();
+                refreshAutoToken(serviceType);
+                setVehicleType(tokenVehicleType?.value || "Hatchback");
+                switchServiceTab(serviceType, driverName);
+                tokenFormView.style.display = "flex";
+                tokenPassCardView.style.display = "none";
+                tokenModal.classList.add("open");
+                document.body.style.overflow = "hidden";
+            }
+
+            // Close Generator Modal
+            function closeModal() {
+                tokenModal.classList.remove("open");
+                document.body.style.overflow = "";
+            }
+
+            // Render Generated Pass Card
+            function displayPassCard(token) {
+                currentActiveToken = token;
+                cardTokenCode.textContent = token.token_code;
+                cardSecurityPin.textContent = token.security_pin;
+                cardServiceType.textContent = token.service_type.replace(/_/g, ' ');
+                if (cardVehicleType) cardVehicleType.textContent = token.vehicle_type || token.vehicleType || "Hatchback";
+                cardVehicleReg.textContent = token.vehicle_number;
+                if (cardContactPhone) cardContactPhone.textContent = token.contact_phone || token.contactPhone || (tokenContactPhone ? tokenContactPhone.value : "9456923238");
+                cardProviderName.textContent = token.provider_name;
+                cardLocation.textContent = token.location_address;
+
+                // Format slot
+                if (token.scheduled_time && token.scheduled_time !== 'IMMEDIATE') {
+                    cardSlotTime.textContent = token.scheduled_time.includes('T')
+                        ? new Date(token.scheduled_time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+                        : token.scheduled_time;
+                } else {
+                    cardSlotTime.textContent = token.service_type === 'TOWING' ? "Immediate Dispatch (ETA ~12 mins)" : "Today Priority Slot";
+                }
+
+                if (token.notes && token.notes.trim()) {
+                    cardNotesRow.style.display = "flex";
+                    cardNotes.textContent = token.notes;
+                } else {
+                    cardNotesRow.style.display = "none";
+                }
+
+                if (token.status === "CANCELLED") {
+                    cardStatusPill.className = "pass-status-pill cancelled";
+                    cardStatusText.textContent = "CANCELLED";
+                    cancelPassBtn.style.display = "none";
+                } else {
+                    cardStatusPill.className = "pass-status-pill";
+                    cardStatusText.textContent = "CONFIRMED & ACTIVE";
+                    cancelPassBtn.style.display = "inline-flex";
+                }
+
+                tokenFormView.style.display = "none";
+                tokenPassCardView.style.display = "flex";
+                tokenModalTitle.textContent = "Official Digital Service Pass";
+                modalSubPill.textContent = "VERIFIED PIN";
+                modalIcon.textContent = "🎟️";
+            }
+
+            // Form Submit Handler
+            tokenGenForm.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const type = selectedServiceType.value;
+                const vehNum = tokenVehicleNumber.value.trim().toUpperCase();
+                const phone = tokenContactPhone.value.trim();
+                const vehType = tokenVehicleType ? tokenVehicleType.value : "Hatchback";
+                const autoTokenId = tokenAutoGeneratedId?.value || formAutoTokenDisplay?.textContent || generateClientTokenId(type);
+
+                if (!vehNum) {
+                    alert("Please enter your vehicle registration plate number.");
+                    tokenVehicleNumber.focus();
+                    return;
+                }
+
+                if (!phone) {
+                    alert("Please enter your contact phone number.");
+                    tokenContactPhone.focus();
+                    return;
+                }
+
+                let provider = "";
+                let notes = tokenNotes.value.trim();
+
+                if (type === "TOWING") {
+                    provider = tokenDriverSelect.value;
+                } else if (type === "TYRE_CHECKUP") {
+                    provider = tokenCenterSelect.value;
+                    notes = notes ? `[Checkup: 4-Wheel Diagnostic] ${notes}` : "[Checkup: 4-Wheel Diagnostic]";
+                } else {
+                    provider = tokenCenterSelect.value;
+                    const selectedAxle = document.querySelector('input[name="tyreAxle"]:checked')?.value || "All 4 Tyres";
+                    const brand = document.getElementById("tokenTyreBrandSelect").value;
+                    notes = notes ? `[Replacement: ${selectedAxle} · ${brand}] ${notes}` : `[Replacement: ${selectedAxle} · ${brand}]`;
+                }
+
+                const slot = tokenTimeSlot.options[tokenTimeSlot.selectedIndex].text;
+                const loc = tokenLocation.value.trim() || "Hazratganj, Lucknow (GPS Lock: 26.8467° N, 80.9462° E)";
+
+                generateTokenSubmitBtn.disabled = true;
+                generateTokenSubmitBtn.innerHTML = "⚡ GENERATING ENCRYPTED PASS...";
+
+                try {
+                    const token = await VelocheckAuth.generateServiceToken({
+                        vehicleNumber: vehNum,
+                        vehicleType: vehType,
+                        tokenId: autoTokenId,
+                        tokenCode: autoTokenId,
+                        serviceType: type,
+                        providerName: provider,
+                        locationAddress: loc,
+                        scheduledTime: slot,
+                        contactPhone: phone,
+                        notes: notes
+                    });
+
+                    // Save active vehicle plate for future auto-fill
+                    localStorage.setItem("velocheck_active_vehicle", vehNum);
+
+                    displayPassCard(token);
+                    updatePassBadge();
+                } catch (err) {
+                    alert("Error creating pass token: " + err.message);
+                } finally {
+                    generateTokenSubmitBtn.disabled = false;
+                    generateTokenSubmitBtn.innerHTML = "⚡ GENERATE SECURE DIGITAL PASS";
+                }
+            });
+
+            // Vehicle Type Chips Click Listener
+            vehicleTypeChips.forEach(chip => {
+                chip.addEventListener("click", function() {
+                    const v = this.dataset.vehicle;
+                    setVehicleType(v);
+                });
+            });
+
+            // Regenerate Token ID Button
+            formRegenTokenBtn?.addEventListener("click", function() {
+                refreshAutoToken();
+            });
+
+            // Tab Event Listeners
+            tabTowing.addEventListener("click", () => switchServiceTab("TOWING"));
+            tabCheckup.addEventListener("click", () => switchServiceTab("TYRE_CHECKUP"));
+            tabReplacement.addEventListener("click", () => switchServiceTab("TYRE_REPLACEMENT"));
+
+            // Quick Bar Clicks
+            document.getElementById("quickCardTowing")?.addEventListener("click", () => openModal("TOWING"));
+            document.getElementById("quickCardCheckup")?.addEventListener("click", () => openModal("TYRE_CHECKUP"));
+            document.getElementById("quickCardReplacement")?.addEventListener("click", () => openModal("TYRE_REPLACEMENT"));
+
+            // Driver Card "Dispatch Pass" Buttons
+            document.querySelectorAll(".tow-dispatch-btn").forEach(btn => {
+                btn.addEventListener("click", function(e) {
+                    e.stopPropagation();
+                    const name = this.dataset.driverName;
+                    openModal("TOWING", name);
+                });
+            });
+
+            // Header Buttons
+            openTokenModalBtn?.addEventListener("click", () => openModal("TOWING"));
+            closeTokenModalBtn?.addEventListener("click", closeModal);
+            tokenModal.addEventListener("click", (e) => {
+                if (e.target === tokenModal) closeModal();
+            });
+
+            // GPS Auto-detect Button in Form
+            tokenDetectLocationBtn?.addEventListener("click", function() {
+                if (!navigator.geolocation) {
+                    alert("Geolocation is not supported by your browser.");
+                    return;
+                }
+                tokenDetectLocationBtn.textContent = "Locating...";
+                navigator.geolocation.getCurrentPosition(
+                    function(pos) {
+                        tokenLocation.value = `Live GPS: ${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° E (Near Lucknow)`;
+                        tokenDetectLocationBtn.textContent = "✓ GPS Locked";
+                    },
+                    function() {
+                        tokenLocation.value = "Hazratganj, Lucknow (GPS Lock: 26.8467° N, 80.9462° E)";
+                        tokenDetectLocationBtn.textContent = "📍 Detect GPS";
+                    }
+                );
+            });
+
+            // Copy Token Code Button
+            copyTokenCodeBtn?.addEventListener("click", function() {
+                if (!currentActiveToken) return;
+                navigator.clipboard.writeText(currentActiveToken.token_code).then(() => {
+                    const orig = copyTokenCodeBtn.textContent;
+                    copyTokenCodeBtn.textContent = "✓ COPIED!";
+                    setTimeout(() => { copyTokenCodeBtn.textContent = orig; }, 2000);
+                });
+            });
+
+            // Print Pass Button
+            printPassBtn?.addEventListener("click", () => {
+                window.print();
+            });
+
+            // Cancel Pass Button
+            cancelPassBtn?.addEventListener("click", async function() {
+                if (!currentActiveToken) return;
+                if (!confirm(`Are you sure you want to cancel booking pass ${currentActiveToken.token_code}?`)) return;
+
+                cancelPassBtn.disabled = true;
+                cancelPassBtn.textContent = "Cancelling...";
+
+                try {
+                    await VelocheckAuth.cancelServiceToken(currentActiveToken.token_code);
+                    currentActiveToken.status = "CANCELLED";
+                    cardStatusPill.className = "pass-status-pill cancelled";
+                    cardStatusText.textContent = "CANCELLED";
+                    cancelPassBtn.style.display = "none";
+                    updatePassBadge();
+                    alert(`Booking pass ${currentActiveToken.token_code} has been cancelled.`);
+                } catch (err) {
+                    alert("Failed to cancel token: " + err.message);
+                } finally {
+                    cancelPassBtn.disabled = false;
+                    cancelPassBtn.textContent = "✕ Cancel Booking";
+                }
+            });
+
+            // Book Another Pass
+            bookAnotherPassBtn?.addEventListener("click", function() {
+                tokenFormView.style.display = "flex";
+                tokenPassCardView.style.display = "none";
+                switchServiceTab("TOWING");
+            });
+
+            // My Passes Modal
+            async function openMyTokens() {
+                const listContainer = document.getElementById("myTokensListContainer");
+                listContainer.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding:20px;">Loading your service passes...</p>';
+                myTokensModal.classList.add("open");
+                document.body.style.overflow = "hidden";
+
+                try {
+                    const tokens = await VelocheckAuth.getMyServiceTokens();
+                    if (!tokens || tokens.length === 0) {
+                        listContainer.innerHTML = 
+                            '<div style="text-align:center; padding:30px 10px; color:var(--text-secondary);">' +
+                            '<div style="font-size:36px; margin-bottom:8px;">🎫</div>' +
+                            '<h4 style="color:#fff; margin-bottom:4px;">No Service Passes Found</h4>' +
+                            '<p style="font-size:12.5px; max-width:320px; margin:0 auto 16px;">You haven\'t booked any towing trucks or tyre checkups yet. Generate your first pass above.</p>' +
+                            '</div>';
+                        return;
+                    }
+
+                    listContainer.innerHTML = "";
+                    tokens.forEach(tok => {
+                        const isCancelled = tok.status === "CANCELLED";
+                        const icon = tok.service_type === "TOWING" ? "🚨" : (tok.service_type === "TYRE_CHECKUP" ? "🔍" : "🔄");
+                        const statusColor = isCancelled ? "var(--signal-red)" : "var(--signal-green)";
+
+                        const item = document.createElement("div");
+                        item.className = "token-item-card";
+                        item.innerHTML = 
+                            `<div class="token-item-left">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:16px;">${icon}</span>
+                                    <span class="token-item-code">${tok.token_code}</span>
+                                    <span style="font-size:10px; padding:2px 6px; border-radius:4px; border:1px solid ${statusColor}; color:${statusColor}; font-weight:700;">
+                                        ${tok.status}
+                                    </span>
+                                </div>
+                                <div class="token-item-meta">
+                                    <strong>${tok.vehicle_number} (${tok.vehicle_type || 'Hatchback'})</strong> · ${tok.provider_name}
+                                </div>
+                                <div style="font-size:11px; color:var(--signal-amber); font-weight:600; margin-top:2px;">
+                                    🔐 PIN: ${tok.security_pin}
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" class="btn btn-outline btn-sm view-tok-btn">View Pass</button>
+                            </div>`;
+
+                        item.querySelector(".view-tok-btn").addEventListener("click", () => {
+                            myTokensModal.classList.remove("open");
+                            displayPassCard(tok);
+                            tokenModal.classList.add("open");
+                        });
+
+                        listContainer.appendChild(item);
+                    });
+
+                } catch (err) {
+                    listContainer.innerHTML = '<p style="color:var(--signal-red); text-align:center; padding:20px;">Failed to load tokens.</p>';
+                }
+            }
+
+            openMyTokensBtn?.addEventListener("click", openMyTokens);
+            closeMyTokensModalBtn?.addEventListener("click", () => {
+                myTokensModal.classList.remove("open");
+                document.body.style.overflow = "";
+            });
+            myTokensModal?.addEventListener("click", (e) => {
+                if (e.target === myTokensModal) {
+                    myTokensModal.classList.remove("open");
+                    document.body.style.overflow = "";
+                }
+            });
+            newPassFromListBtn?.addEventListener("click", () => {
+                myTokensModal.classList.remove("open");
+                openModal("TOWING");
+            });
+
+            // Initialize badges and values
+            updatePassBadge();
+            loadDefaults();
+        })();
+    </script>
+    <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications — VELOCHECK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#070a0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<script src="app-navigation.js"></script>
+<body>
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline">Notifications &amp; Alerts</p>
+            </div>
+        </div>
+        <a href="homepage.html" class="icon-btn" style="text-decoration:none;">←</a>
+    </header>
+
+    <main class="vc-page-narrow">
+        <ul class="notif-list">
+            <li class="notif-item crit">
+                <div class="body">
+                    <p class="headline">Front tyre pressure critical</p>
+                    <p class="meta">BIKE · UP32 AW 7094 — reading dropped to 24 psi</p>
+                </div>
+                <span class="time">2m ago</span>
+            </li>
+            <li class="notif-item warn">
+                <div class="body">
+                    <p class="headline">Rear tyre temperature rising</p>
+                    <p class="meta">BIKE · UP32 AW 7094 — 58°C, approaching warning band</p>
+                </div>
+                <span class="time">41m ago</span>
+            </li>
+            <li class="notif-item">
+                <div class="body">
+                    <p class="headline">ESP32 Telemetry Linked</p>
+                    <p class="meta">Connected to VELOCHECK-WIFI (192.168.4.1)</p>
+                </div>
+                <span class="time">1h ago</span>
+            </li>
+            <li class="notif-item">
+                <div class="body">
+                    <p class="headline">Tyre change reminder</p>
+                    <p class="meta">Next due date is 26 Jun 2030</p>
+                </div>
+                <span class="time">Yesterday</span>
+            </li>
+        </ul>
+    </main>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

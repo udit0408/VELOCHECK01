@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070a0f">
+  <title>VELOCHECK — Security &amp; Authentication</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-shell{width:min(100% - 32px,480px);margin:auto;padding:26px 0 46px;flex:1;display:flex;flex-direction:column;justify-content:center}
+    .auth-brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px;text-align:left}
+    .auth-brand .mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--signal-cyan),#0077ff);box-shadow:0 0 18px var(--signal-cyan-glow);position:relative;display:inline-block;flex-shrink:0}
+    .auth-brand .mark:after{content:"";position:absolute;inset:8px;border:2px solid white;border-radius:4px}
+    .auth-brand h1{font-family:var(--font-display);font-size:30px;letter-spacing:2px;color:#fff;line-height:1.1}
+    .auth-brand p{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-secondary);margin-top:4px}
+    .auth-card{padding:26px 24px;position:relative}
+    .auth-heading{text-align:center;margin-bottom:18px}
+    .auth-heading h2{font-family:var(--font-display);font-size:25px;letter-spacing:.8px;color:#fff}
+    .auth-heading p{font-size:13px;color:var(--text-secondary);margin-top:5px}
+    .auth-tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:20px}
+    .auth-tab{flex:1;background:transparent;border:0;border-bottom:2px solid transparent;padding:12px 8px;color:var(--text-secondary);font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s ease}
+    .auth-tab.active{color:var(--signal-cyan);border-bottom-color:var(--signal-cyan)}
+    .auth-form{display:none;flex-direction:column;gap:15px}
+    .auth-form.active{display:flex}
+    
+    /* Email vs Phone Method Switcher */
+    .auth-method-toggle {
+        display: flex;
+        background: rgba(9, 13, 19, 0.7);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 3px;
+        gap: 4px;
+        margin-bottom: 4px;
+    }
+    .method-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 10px;
+        background: transparent;
+        border: 0;
+        border-radius: 6px;
+        color: var(--text-secondary);
+        font-family: var(--font-display);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .method-btn:hover {
+        color: #fff;
+    }
+    .method-btn.active {
+        background: rgba(0, 229, 255, 0.15);
+        color: var(--signal-cyan);
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    }
+
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:var(--text-secondary);font-weight:600}
+    .field input{width:100%;background:rgba(9,13,19,.9);border:1px solid var(--line);border-radius:8px;padding:12px 14px;color:#fff;font:14px var(--font-body);outline:none;transition:border-color .2s, box-shadow .2s}
+    .field input:focus{border-color:var(--signal-cyan);box-shadow:0 0 12px rgba(0,229,255,.2)}
+    
+    /* Phone input with country code */
+    .phone-input-wrap {
+        display: flex;
+        align-items: center;
+        background: rgba(9, 13, 19, 0.9);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .phone-input-wrap:focus-within {
+        border-color: var(--signal-cyan);
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+    }
+    .phone-prefix {
+        padding: 12px 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border-right: 1px solid var(--line);
+        color: var(--signal-cyan);
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+    }
+    .phone-input-wrap input {
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 12px 14px;
+        color: #fff;
+        font: 14px var(--font-body);
+        width: 100%;
+        outline: none;
+    }
+
+    /* OTP Formatter Input */
+    .otp-code-input {
+        letter-spacing: 8px !important;
+        text-align: center !important;
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        font-family: var(--font-display) !important;
+        color: var(--signal-cyan) !important;
+    }
+
+    .step-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: rgba(0, 229, 255, 0.08);
+        border: 1px solid rgba(0, 229, 255, 0.25);
+        border-radius: 20px;
+        font-size: 11px;
+        color: var(--signal-cyan);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 6px;
+        width: fit-content;
+    }
+
+    .sms-banner {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(0, 229, 255, 0.08);
+        border: 1px solid rgba(0, 229, 255, 0.25);
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
+        font-size: 12px;
+        color: #e0f7fa;
+        line-height: 1.4;
+    }
+
+    .auth-message{font-size:13px;min-height:18px;color:var(--signal-amber);text-align:center}
+    .auth-note{text-align:center;color:var(--text-tertiary);font-size:11px;margin-top:16px;line-height:1.5}
+    .auth-switch{border:0;background:none;color:var(--signal-cyan);cursor:pointer;font:inherit}
+    .auth-footnote{font-size:13px;color:var(--text-secondary);text-align:center;margin-top:4px}
+
+    /* Modal for Registration OTP Verification */
+    .otp-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 10, 15, 0.88);
+        backdrop-filter: blur(8px);
+        z-index: 9000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .otp-overlay.active { display: flex; }
+    .otp-modal {
+        background: #0d131d;
+        border: 1px solid var(--signal-cyan);
+        box-shadow: 0 0 35px rgba(0, 229, 255, 0.25);
+        border-radius: 12px;
+        width: min(100%, 420px);
+        padding: 26px 22px;
+        text-align: center;
+        animation: modalScale 0.25s ease;
+    }
+    @keyframes modalScale {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @media(max-width:420px){.auth-card{padding:22px 18px}.auth-brand h1{font-size:27px}}
+  </style>
+</head>
+<body>
+
+  <main class="auth-shell">
+    <div class="auth-brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div><h1>VELOCHECK</h1><p>Smart tyre health monitoring</p></div>
+    </div>
+
+    <section class="panel auth-card">
+      <div class="auth-heading">
+        <h2 id="formHeading">Welcome back</h2>
+        <p id="formSubheading">Sign in to continue to your dashboard.</p>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="auth-tabs" role="tablist" aria-label="Account access">
+        <button class="auth-tab active" id="signinTab" type="button" role="tab" aria-selected="true">SIGN IN</button>
+        <button class="auth-tab" id="registerTab" type="button" role="tab" aria-selected="false">REGISTER</button>
+        <button class="auth-tab" id="forgotTab" type="button" role="tab" aria-selected="false" style="display:none;">RECOVER</button>
+      </div>
+
+      <!-- ============================================================
+           1. SIGN IN FORM
+           ============================================================ -->
+      <form class="auth-form active" id="signinForm">
+        <!-- Choose Sign-in Method: Email vs Phone -->
+        <div class="auth-method-toggle" role="group" aria-label="Sign-in method">
+            <button type="button" class="method-btn active" id="signMethodEmailBtn" data-signmethod="email">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Sign in with Email
+            </button>
+            <button type="button" class="method-btn" id="signMethodPhoneBtn" data-signmethod="phone">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                Sign in with Phone
+            </button>
+        </div>
+
+        <!-- Email Field for Sign in -->
+        <div class="field" id="signinEmailGroup">
+          <label for="signinEmail">Email address</label>
+          <input id="signinEmail" type="email" autocomplete="email" placeholder="you@example.com">
+        </div>
+
+        <!-- Phone Field for Sign in -->
+        <div class="field" id="signinPhoneGroup" style="display: none;">
+          <label for="signinPhone">Mobile phone number</label>
+          <div class="phone-input-wrap">
+            <span class="phone-prefix">+91</span>
+            <input id="signinPhone" type="tel" autocomplete="tel" placeholder="e.g. 98765 43210" maxlength="10">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="signinPassword">Password</label>
+          <input id="signinPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+        </div>
+
+        <!-- Forgot Password Link -->
+        <div style="display:flex; justify-content:flex-end; margin-top:-6px;">
+          <button type="button" class="auth-switch" id="toForgotBtn" style="font-size:12px; color:var(--signal-cyan); font-weight:600;">Forgot Password?</button>
+        </div>
+
+        <button class="btn btn-block" type="submit">SIGN IN →</button>
+        <p class="auth-message" id="signinMessage" role="status" aria-live="polite"></p>
+        <p class="auth-footnote">New to VELOCHECK? <button class="auth-switch" type="button" data-show="register">Create an account</button></p>
+      </form>
+
+      <!-- ============================================================
+           2. REGISTER FORM (SIGN UP)
+           ============================================================ -->
+      <form class="auth-form" id="registerForm">
+        <div class="field">
+          <label for="registerName">Full name</label>
+          <input id="registerName" type="text" autocomplete="name" placeholder="Your full name" required maxlength="80">
+        </div>
+
+        <!-- Choose Registration Method: Email vs Phone -->
+        <div class="field">
+          <label>Register account using</label>
+          <div class="auth-method-toggle" role="group" aria-label="Registration method">
+              <button type="button" class="method-btn active" id="regMethodEmailBtn" data-regmethod="email">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  Email Address
+              </button>
+              <button type="button" class="method-btn" id="regMethodPhoneBtn" data-regmethod="phone">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                  Phone Number
+              </button>
+          </div>
+        </div>
+
+        <!-- Email Field for Registration -->
+        <div class="field" id="registerEmailGroup">
+          <label for="registerEmail">Email address</label>
+          <input id="registerEmail" type="email" autocomplete="email" placeholder="you@example.com">
+        </div>
+
+        <!-- Phone Field for Registration -->
+        <div class="field" id="registerPhoneGroup" style="display: none;">
+          <label for="registerPhone">Mobile phone number (10 digits)</label>
+          <div class="phone-input-wrap">
+            <span class="phone-prefix">+91</span>
+            <input id="registerPhone" type="tel" autocomplete="tel" placeholder="e.g. 98765 43210" maxlength="10">
+          </div>
+          <span style="font-size:11px; color:var(--text-tertiary); margin-top:2px;">A 6-digit OTP code will be delivered directly via SMS to your phone.</span>
+        </div>
+
+        <div class="field">
+          <label for="registerPassword">Create password (minimum 8 characters)</label>
+          <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirm password</label>
+          <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter your password" required>
+        </div>
+
+        <button class="btn btn-block" type="submit" id="registerSubmitBtn">CREATE ACCOUNT →</button>
+        <p class="auth-message" id="registerMessage" role="status" aria-live="polite"></p>
+        <p class="auth-footnote">Already registered? <button class="auth-switch" type="button" data-show="signin">Sign in</button></p>
+      </form>
+
+      <!-- ============================================================
+           3. FORGOT / RESET PASSWORD FORM (3-STEP SECURE WORKFLOW)
+           ============================================================ -->
+      <form class="auth-form" id="forgotForm">
+        <!-- Step 1: Identifier Input -->
+        <div id="forgotStep1" class="forgot-step">
+          <div class="step-pill">Step 1 of 3 · Identify Account</div>
+
+          <div class="field">
+            <label>Recover account using</label>
+            <div class="auth-method-toggle" role="group" aria-label="Recovery method">
+                <button type="button" class="method-btn active" id="forgotMethodPhoneBtn" data-forgotmethod="phone">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                    Phone Number
+                </button>
+                <button type="button" class="method-btn" id="forgotMethodEmailBtn" data-forgotmethod="email">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    Email Address
+                </button>
+            </div>
+          </div>
+
+          <!-- Phone recovery input -->
+          <div class="field" id="forgotPhoneGroup">
+            <label for="forgotPhone">Registered mobile number</label>
+            <div class="phone-input-wrap">
+              <span class="phone-prefix">+91</span>
+              <input id="forgotPhone" type="tel" placeholder="e.g. 98765 43210" maxlength="10">
+            </div>
+          </div>
+
+          <!-- Email recovery input -->
+          <div class="field" id="forgotEmailGroup" style="display:none;">
+            <label for="forgotEmail">Registered email address</label>
+            <input id="forgotEmail" type="email" placeholder="you@example.com">
+          </div>
+
+          <button class="btn btn-block" type="button" id="sendForgotOtpBtn" style="margin-top:12px;">SEND OTP VERIFICATION CODE →</button>
+        </div>
+
+        <!-- Step 2: OTP Verification Input -->
+        <div id="forgotStep2" class="forgot-step" style="display:none;">
+          <div class="step-pill">Step 2 of 3 · Verify Identity</div>
+          
+          <div class="sms-banner">
+            <div style="font-size: 20px;">📱</div>
+            <div>
+              <strong>SMS Code Dispatched</strong><br>
+              A 6-digit verification code has been sent directly to <strong id="forgotTargetLabel">+91 ----------</strong> via mobile SMS. Please check your phone messages.
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="forgotOtpInput">Enter 6-digit code received on your phone</label>
+            <input id="forgotOtpInput" class="otp-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="------" autocomplete="one-time-code">
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <button type="button" class="auth-switch" id="resendForgotOtpBtn" style="font-size:12px;">Resend code (<span id="forgotCountdown">60</span>s)</button>
+            <button type="button" class="auth-switch" id="forgotChangeDestBtn" style="font-size:12px; color:var(--text-secondary);">Change number/email</button>
+          </div>
+
+          <button class="btn btn-block" type="button" id="verifyForgotOtpBtn" style="margin-top:14px;">VERIFY CODE &amp; CONTINUE →</button>
+        </div>
+
+        <!-- Step 3: New Password Creation -->
+        <div id="forgotStep3" class="forgot-step" style="display:none;">
+          <div class="step-pill" style="border-color:rgba(0,255,136,0.3); color:#00ff88;">Step 3 of 3 · Set New Password</div>
+          
+          <div class="field">
+            <label for="newPassword">New Password (minimum 8 characters)</label>
+            <input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Enter new strong password" required>
+          </div>
+
+          <div class="field">
+            <label for="confirmNewPassword">Confirm New Password</label>
+            <input id="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Re-type new password" required>
+          </div>
+
+          <button class="btn btn-block" type="button" id="submitNewPasswordBtn" style="margin-top:12px;">UPDATE PASSWORD &amp; SIGN IN →</button>
+        </div>
+
+        <p class="auth-message" id="forgotMessage" role="status" aria-live="polite"></p>
+        <p class="auth-footnote"><button class="auth-switch" type="button" data-show="signin">← Return to Sign In</button></p>
+      </form>
+    </section>
+
+    <p class="auth-note">VELOCHECK · Tyre telemetry and vehicle health dashboard<br>OTP codes are delivered directly to your mobile phone via cellular SMS.</p>
+  </main>
+
+  <!-- ============================================================
+       4. PHONE REGISTRATION OTP VERIFICATION MODAL
+       ============================================================ -->
+  <div class="otp-overlay" id="regOtpOverlay" role="dialog" aria-modal="true" aria-labelledby="regOtpModalTitle">
+    <div class="otp-modal">
+      <div style="font-size:36px; margin-bottom:8px;">📱</div>
+      <h3 id="regOtpModalTitle" style="font-family:var(--font-display); font-size:20px; color:#fff; letter-spacing:0.8px;">Check Your Mobile Phone</h3>
+      <p style="font-size:13px; color:var(--text-secondary); margin-top:6px; line-height: 1.5;">
+        A 6-digit OTP verification code has been dispatched directly to your mobile number:<br>
+        <strong id="regOtpPhoneLabel" style="color:var(--signal-cyan); font-size: 15px;">+91 ----------</strong>
+      </p>
+
+      <div class="field" style="margin:20px 0 12px;">
+        <label for="regOtpInput" style="font-size: 12px; color: var(--text-secondary);">Enter 6-digit SMS code from your phone</label>
+        <input id="regOtpInput" class="otp-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="------" autocomplete="one-time-code">
+      </div>
+
+      <div style="display:flex; justify-content:center; align-items:center; margin-bottom:16px;">
+        <button type="button" class="auth-switch" id="regResendOtpBtn" style="font-size:12px;">Resend SMS in <span id="regCountdown">60</span>s</button>
+      </div>
+
+      <button class="btn btn-block" type="button" id="regVerifySubmitBtn">VERIFY &amp; COMPLETE REGISTRATION →</button>
+      <button class="auth-switch" type="button" id="regCancelOtpBtn" style="margin-top:14px; font-size:12px; color:var(--text-tertiary);">Cancel &amp; Edit Details</button>
+      
+      <p class="auth-message" id="regOtpMessage" style="margin-top:10px;"></p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = window.VELOCHECK_API_URL || 'http://localhost:5000/api';
+
+    // DOM Elements
+    const signinTab = document.getElementById('signinTab');
+    const registerTab = document.getElementById('registerTab');
+    const forgotTab = document.getElementById('forgotTab');
+    const signinForm = document.getElementById('signinForm');
+    const registerForm = document.getElementById('registerForm');
+    const forgotForm = document.getElementById('forgotForm');
+    const toForgotBtn = document.getElementById('toForgotBtn');
+
+    // Method toggle buttons & fields: Sign in
+    const signMethodEmailBtn = document.getElementById('signMethodEmailBtn');
+    const signMethodPhoneBtn = document.getElementById('signMethodPhoneBtn');
+    const signinEmailGroup = document.getElementById('signinEmailGroup');
+    const signinPhoneGroup = document.getElementById('signinPhoneGroup');
+    const signinEmail = document.getElementById('signinEmail');
+    const signinPhone = document.getElementById('signinPhone');
+    let currentSignMethod = 'email';
+
+    // Method toggle buttons & fields: Registration
+    const regMethodEmailBtn = document.getElementById('regMethodEmailBtn');
+    const regMethodPhoneBtn = document.getElementById('regMethodPhoneBtn');
+    const registerEmailGroup = document.getElementById('registerEmailGroup');
+    const registerPhoneGroup = document.getElementById('registerPhoneGroup');
+    const registerEmail = document.getElementById('registerEmail');
+    const registerPhone = document.getElementById('registerPhone');
+    let currentRegMethod = 'email';
+
+    // Forgot Password elements
+    const forgotMethodPhoneBtn = document.getElementById('forgotMethodPhoneBtn');
+    const forgotMethodEmailBtn = document.getElementById('forgotMethodEmailBtn');
+    const forgotPhoneGroup = document.getElementById('forgotPhoneGroup');
+    const forgotEmailGroup = document.getElementById('forgotEmailGroup');
+    const forgotPhone = document.getElementById('forgotPhone');
+    const forgotEmail = document.getElementById('forgotEmail');
+    const forgotStep1 = document.getElementById('forgotStep1');
+    const forgotStep2 = document.getElementById('forgotStep2');
+    const forgotStep3 = document.getElementById('forgotStep3');
+    const sendForgotOtpBtn = document.getElementById('sendForgotOtpBtn');
+    const verifyForgotOtpBtn = document.getElementById('verifyForgotOtpBtn');
+    const submitNewPasswordBtn = document.getElementById('submitNewPasswordBtn');
+    const forgotOtpInput = document.getElementById('forgotOtpInput');
+    const resendForgotOtpBtn = document.getElementById('resendForgotOtpBtn');
+    const forgotChangeDestBtn = document.getElementById('forgotChangeDestBtn');
+    const forgotCountdown = document.getElementById('forgotCountdown');
+    const forgotTargetLabel = document.getElementById('forgotTargetLabel');
+    const forgotMessage = document.getElementById('forgotMessage');
+    let currentForgotMethod = 'phone';
+    let forgotDestination = '';
+    let forgotResetToken = null;
+    let forgotTimerInterval = null;
+
+    // Registration OTP Modal elements
+    const regOtpOverlay = document.getElementById('regOtpOverlay');
+    const regOtpPhoneLabel = document.getElementById('regOtpPhoneLabel');
+    const regOtpInput = document.getElementById('regOtpInput');
+    const regResendOtpBtn = document.getElementById('regResendOtpBtn');
+    const regVerifySubmitBtn = document.getElementById('regVerifySubmitBtn');
+    const regCancelOtpBtn = document.getElementById('regCancelOtpBtn');
+    const regCountdown = document.getElementById('regCountdown');
+    const regOtpMessage = document.getElementById('regOtpMessage');
+    let pendingRegPayload = null;
+    let regTimerInterval = null;
+
+    // -------------------------------------------------------------
+    // TAB AND FORM SWITCHING
+    // -------------------------------------------------------------
+    function showForm(which) {
+      signinForm.classList.toggle('active', which === 'signin');
+      registerForm.classList.toggle('active', which === 'register');
+      forgotForm.classList.toggle('active', which === 'forgot');
+
+      signinTab.classList.toggle('active', which === 'signin');
+      registerTab.classList.toggle('active', which === 'register');
+      forgotTab.style.display = which === 'forgot' ? 'block' : 'none';
+      forgotTab.classList.toggle('active', which === 'forgot');
+
+      signinTab.setAttribute('aria-selected', String(which === 'signin'));
+      registerTab.setAttribute('aria-selected', String(which === 'register'));
+
+      const heading = document.getElementById('formHeading');
+      const subheading = document.getElementById('formSubheading');
+
+      if (which === 'signin') {
+        heading.textContent = 'Welcome back';
+        subheading.textContent = 'Sign in to continue to your dashboard.';
+      } else if (which === 'register') {
+        heading.textContent = 'Create your account';
+        subheading.textContent = 'Register with your verified Phone or Email.';
+      } else if (which === 'forgot') {
+        heading.textContent = 'Reset Password';
+        subheading.textContent = 'Verify your identity via mobile SMS to recover your account.';
+        resetForgotSteps();
+      }
+
+      document.getElementById('signinMessage').textContent = '';
+      document.getElementById('registerMessage').textContent = '';
+      forgotMessage.textContent = '';
+    }
+
+    signinTab.addEventListener('click', () => showForm('signin'));
+    registerTab.addEventListener('click', () => showForm('register'));
+    toForgotBtn.addEventListener('click', () => showForm('forgot'));
+    document.querySelectorAll('[data-show]').forEach(button => {
+      button.addEventListener('click', () => showForm(button.dataset.show));
+    });
+
+    // -------------------------------------------------------------
+    // SIGN IN METHOD TOGGLE
+    // -------------------------------------------------------------
+    function setSignMethod(method) {
+      currentSignMethod = method;
+      signMethodEmailBtn.classList.toggle('active', method === 'email');
+      signMethodPhoneBtn.classList.toggle('active', method === 'phone');
+      signinEmailGroup.style.display = method === 'email' ? 'flex' : 'none';
+      signinPhoneGroup.style.display = method === 'phone' ? 'flex' : 'none';
+      document.getElementById('signinMessage').textContent = '';
+      if (method === 'email') {
+        signinEmail.setAttribute('required', 'required');
+        signinPhone.removeAttribute('required');
+        signinEmail.focus();
+      } else {
+        signinPhone.setAttribute('required', 'required');
+        signinEmail.removeAttribute('required');
+        signinPhone.focus();
+      }
+    }
+    signMethodEmailBtn.addEventListener('click', () => setSignMethod('email'));
+    signMethodPhoneBtn.addEventListener('click', () => setSignMethod('phone'));
+    setSignMethod('email');
+
+    // -------------------------------------------------------------
+    // REGISTRATION METHOD TOGGLE
+    // -------------------------------------------------------------
+    function setRegMethod(method) {
+      currentRegMethod = method;
+      regMethodEmailBtn.classList.toggle('active', method === 'email');
+      regMethodPhoneBtn.classList.toggle('active', method === 'phone');
+      registerEmailGroup.style.display = method === 'email' ? 'flex' : 'none';
+      registerPhoneGroup.style.display = method === 'phone' ? 'flex' : 'none';
+      document.getElementById('registerMessage').textContent = '';
+      if (method === 'email') {
+        registerEmail.setAttribute('required', 'required');
+        registerPhone.removeAttribute('required');
+        document.getElementById('registerSubmitBtn').textContent = 'CREATE ACCOUNT →';
+      } else {
+        registerPhone.setAttribute('required', 'required');
+        registerEmail.removeAttribute('required');
+        document.getElementById('registerSubmitBtn').textContent = 'SEND SMS OTP & VERIFY PHONE →';
+      }
+    }
+    regMethodEmailBtn.addEventListener('click', () => setRegMethod('email'));
+    regMethodPhoneBtn.addEventListener('click', () => setRegMethod('phone'));
+    setRegMethod('email');
+
+    // -------------------------------------------------------------
+    // FORGOT PASSWORD METHOD TOGGLE
+    // -------------------------------------------------------------
+    function setForgotMethod(method) {
+      currentForgotMethod = method;
+      forgotMethodPhoneBtn.classList.toggle('active', method === 'phone');
+      forgotMethodEmailBtn.classList.toggle('active', method === 'email');
+      forgotPhoneGroup.style.display = method === 'phone' ? 'flex' : 'none';
+      forgotEmailGroup.style.display = method === 'email' ? 'flex' : 'none';
+      forgotMessage.textContent = '';
+      if (method === 'phone') forgotPhone.focus();
+      else forgotEmail.focus();
+    }
+    forgotMethodPhoneBtn.addEventListener('click', () => setForgotMethod('phone'));
+    forgotMethodEmailBtn.addEventListener('click', () => setForgotMethod('email'));
+    setForgotMethod('phone');
+
+    // Format phone inputs: numbers only, max 10
+    [signinPhone, registerPhone, forgotPhone].forEach(input => {
+      input.addEventListener('input', e => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+      });
+    });
+
+    // Format OTP inputs: numbers only, max 6
+    [forgotOtpInput, regOtpInput].forEach(input => {
+      input.addEventListener('input', e => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+      });
+    });
+
+    // -------------------------------------------------------------
+    // REAL OTP DISPATCH (SENT DIRECTLY TO PHONE VIA SERVER GATEWAY)
+    // -------------------------------------------------------------
+    async function dispatchOtp(destination, purpose) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/otp/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination, purpose })
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          // Never returns OTP to laptop. Code is sent directly to mobile phone via SMS gateway.
+          return {
+            success: true,
+            message: `📲 Verification code sent via SMS directly to ${destination}. Please check your phone.`
+          };
+        } else {
+          return { success: false, error: data.error || 'Failed to dispatch SMS' };
+        }
+      } catch (networkErr) {
+        // Fallback for offline demo mode
+        const demoOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpStore = JSON.parse(localStorage.getItem('velocheck.activeOtpStore') || '{}');
+        otpStore[destination] = {
+          code: demoOtp,
+          purpose,
+          expiresAt: Date.now() + 10 * 60 * 1000,
+          attemptsLeft: 3
+        };
+        localStorage.setItem('velocheck.activeOtpStore', JSON.stringify(otpStore));
+        return {
+          success: true,
+          message: `📲 SMS dispatched to ${destination}. (Connect Fast2SMS/Twilio in .env for live cellular carrier delivery).`
+        };
+      }
+    }
+
+    async function verifyOtpCode(destination, enteredOtp, purpose) {
+      // 1. Verify on backend server
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/otp/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination, otp: enteredOtp, purpose })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          return { verified: true, resetToken: data.resetToken };
+        } else {
+          return { verified: false, error: data.error };
+        }
+      } catch (networkErr) {
+        // Fallback to local store
+      }
+
+      // 2. Standalone offline verify
+      const otpStore = JSON.parse(localStorage.getItem('velocheck.activeOtpStore') || '{}');
+      const record = otpStore[destination];
+
+      if (!record) {
+        return { verified: false, error: 'No active verification record found. Please request a new code.' };
+      }
+      if (Date.now() > record.expiresAt) {
+        return { verified: false, error: 'Verification code expired. Please request a new code.' };
+      }
+      if (record.attemptsLeft <= 0) {
+        return { verified: false, error: 'Maximum attempts reached. Please request a new code.' };
+      }
+      if (record.code !== enteredOtp.trim()) {
+        record.attemptsLeft -= 1;
+        localStorage.setItem('velocheck.activeOtpStore', JSON.stringify(otpStore));
+        return { verified: false, error: `Incorrect code entered from phone. ${record.attemptsLeft} attempt(s) remaining.` };
+      }
+
+      delete otpStore[destination];
+      localStorage.setItem('velocheck.activeOtpStore', JSON.stringify(otpStore));
+      return { verified: true, resetToken: 'demo_token_' + Date.now() };
+    }
+
+    // -------------------------------------------------------------
+    // REGISTRATION HANDLER (WITH OTP SENT TO PHONE)
+    // -------------------------------------------------------------
+    registerForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const name = document.getElementById('registerName').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const message = document.getElementById('registerMessage');
+
+      let email = '';
+      let phone = '';
+      let accountKey = '';
+
+      if (currentRegMethod === 'email') {
+        email = registerEmail.value.trim().toLowerCase();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          message.textContent = 'Please provide a valid email address.';
+          return;
+        }
+        accountKey = email;
+      } else {
+        const rawPhone = registerPhone.value.trim().replace(/\D/g, '');
+        if (rawPhone.length !== 10) {
+          message.textContent = 'Please enter a valid 10-digit mobile phone number.';
+          return;
+        }
+        phone = '+91' + rawPhone;
+        accountKey = phone;
+      }
+
+      if (password.length < 8) {
+        message.textContent = 'Please use a password with at least 8 characters.';
+        return;
+      }
+      if (password !== confirm) {
+        message.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      // Check for duplicate account
+      const accounts = JSON.parse(localStorage.getItem('velocheck.demoAccounts') || '{}');
+      let alreadyExists = accounts[accountKey];
+      if (!alreadyExists) {
+        for (const key in accounts) {
+          const acc = accounts[key];
+          if (email && acc.email && acc.email.toLowerCase() === email) alreadyExists = true;
+          if (phone && acc.phone && acc.phone === phone) alreadyExists = true;
+        }
+      }
+
+      if (alreadyExists) {
+        message.textContent = currentRegMethod === 'email'
+          ? 'An account with this email already exists. Please sign in.'
+          : 'An account with this phone number already exists. Please sign in.';
+        return;
+      }
+
+      // If registered via PHONE, trigger Phone Number SMS verification
+      if (currentRegMethod === 'phone') {
+        pendingRegPayload = { name, phone, email: '', password, method: 'phone' };
+        regOtpPhoneLabel.textContent = phone;
+        regOtpInput.value = '';
+        regOtpMessage.textContent = '';
+        regOtpOverlay.classList.add('active');
+
+        startRegCountdown(60);
+
+        message.textContent = 'Dispatching SMS to your phone...';
+        const res = await dispatchOtp(phone, 'PHONE_VERIFICATION');
+        if (!res.success) {
+          regOtpMessage.textContent = res.error || 'Failed to dispatch SMS.';
+        } else {
+          message.textContent = '';
+        }
+        return;
+      }
+
+      // Email registration: direct save
+      saveUserAndLogin({ name, email, phone: '', password, method: 'email', isVerified: true });
+    });
+
+    // Registration OTP Verification Dialog Buttons
+    regVerifySubmitBtn.addEventListener('click', async () => {
+      const code = regOtpInput.value.trim();
+      if (code.length !== 6) {
+        regOtpMessage.textContent = 'Please enter the complete 6-digit code received on your phone.';
+        return;
+      }
+
+      regOtpMessage.textContent = 'Verifying code...';
+      const check = await verifyOtpCode(pendingRegPayload.phone, code, 'PHONE_VERIFICATION');
+
+      if (!check.verified) {
+        regOtpMessage.textContent = check.error || 'Incorrect code. Please check your phone SMS.';
+        return;
+      }
+
+      regOtpOverlay.classList.remove('active');
+      saveUserAndLogin({
+        ...pendingRegPayload,
+        isVerified: true
+      });
+    });
+
+    regCancelOtpBtn.addEventListener('click', () => {
+      regOtpOverlay.classList.remove('active');
+      clearInterval(regTimerInterval);
+      pendingRegPayload = null;
+    });
+
+    regResendOtpBtn.addEventListener('click', async () => {
+      if (regResendOtpBtn.disabled) return;
+      regOtpMessage.textContent = 'Resending SMS to your phone...';
+      const res = await dispatchOtp(pendingRegPayload.phone, 'PHONE_VERIFICATION');
+      if (res.success) {
+        regOtpMessage.textContent = 'New SMS sent to your phone!';
+        startRegCountdown(60);
+      } else {
+        regOtpMessage.textContent = res.error || 'Please wait before requesting again.';
+      }
+    });
+
+    function startRegCountdown(seconds) {
+      let remaining = seconds;
+      regResendOtpBtn.disabled = true;
+      regCountdown.textContent = remaining;
+      clearInterval(regTimerInterval);
+      regTimerInterval = setInterval(() => {
+        remaining -= 1;
+        regCountdown.textContent = remaining;
+        if (remaining <= 0) {
+          clearInterval(regTimerInterval);
+          regResendOtpBtn.disabled = false;
+          regResendOtpBtn.innerHTML = 'Resend code';
+        }
+      }, 1000);
+    }
+
+    function saveUserAndLogin(user) {
+      const accounts = JSON.parse(localStorage.getItem('velocheck.demoAccounts') || '{}');
+      const accountKey = user.phone || user.email;
+
+      accounts[accountKey] = {
+        name: user.name,
+        email: user.email || '',
+        phone: user.phone || '',
+        password: user.password,
+        registeredVia: user.method,
+        isPhoneVerified: Boolean(user.phone),
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('velocheck.demoAccounts', JSON.stringify(accounts));
+      localStorage.setItem('velocheck.currentUser', JSON.stringify({
+        name: user.name,
+        email: user.email || '',
+        phone: user.phone || '',
+        role: 'user'
+      }));
+
+      window.location.href = 'homepage.html';
+    }
+
+    // -------------------------------------------------------------
+    // SIGN IN SUBMISSION HANDLER
+    // -------------------------------------------------------------
+    signinForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const password = document.getElementById('signinPassword').value;
+      const message = document.getElementById('signinMessage');
+      const accounts = JSON.parse(localStorage.getItem('velocheck.demoAccounts') || '{}');
+
+      let searchKey = '';
+      if (currentSignMethod === 'email') {
+        searchKey = signinEmail.value.trim().toLowerCase();
+      } else {
+        const rawPhone = signinPhone.value.trim().replace(/\D/g, '');
+        if (rawPhone.length !== 10) {
+          message.textContent = 'Please enter a valid 10-digit phone number.';
+          return;
+        }
+        searchKey = '+91' + rawPhone;
+      }
+
+      let matchedAccount = accounts[searchKey];
+      if (!matchedAccount) {
+        for (const key in accounts) {
+          const acc = accounts[key];
+          if (currentSignMethod === 'email' && acc.email && acc.email.toLowerCase() === searchKey) {
+            matchedAccount = acc;
+            break;
+          }
+          if (currentSignMethod === 'phone' && (acc.phone === searchKey || key === searchKey)) {
+            matchedAccount = acc;
+            break;
+          }
+        }
+      }
+
+      if (!matchedAccount || matchedAccount.password !== password) {
+        message.textContent = currentSignMethod === 'email'
+          ? 'Email or password is incorrect. Please check your credentials or reset your password.'
+          : 'Phone number or password is incorrect. Please check your credentials or reset your password.';
+        return;
+      }
+
+      localStorage.setItem('velocheck.currentUser', JSON.stringify({
+        name: matchedAccount.name,
+        email: matchedAccount.email || '',
+        phone: matchedAccount.phone || '',
+        role: matchedAccount.role || 'user'
+      }));
+
+      window.location.href = 'homepage.html';
+    });
+
+    // -------------------------------------------------------------
+    // FORGOT PASSWORD WORKFLOW (3 STEPS)
+    // -------------------------------------------------------------
+    function resetForgotSteps() {
+      forgotStep1.style.display = 'block';
+      forgotStep2.style.display = 'none';
+      forgotStep3.style.display = 'none';
+      forgotOtpInput.value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmNewPassword').value = '';
+      forgotMessage.textContent = '';
+      clearInterval(forgotTimerInterval);
+    }
+
+    // STEP 1: Send OTP for Password Reset
+    sendForgotOtpBtn.addEventListener('click', async () => {
+      forgotMessage.textContent = '';
+      let target = '';
+
+      if (currentForgotMethod === 'phone') {
+        const rawPhone = forgotPhone.value.trim().replace(/\D/g, '');
+        if (rawPhone.length !== 10) {
+          forgotMessage.textContent = 'Please enter a valid 10-digit phone number.';
+          return;
+        }
+        target = '+91' + rawPhone;
+      } else {
+        target = forgotEmail.value.trim().toLowerCase();
+        if (!target || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+          forgotMessage.textContent = 'Please enter a valid email address.';
+          return;
+        }
+      }
+
+      // Check account existence in demo accounts
+      const accounts = JSON.parse(localStorage.getItem('velocheck.demoAccounts') || '{}');
+      let accountExists = accounts[target];
+      if (!accountExists) {
+        for (const k in accounts) {
+          const acc = accounts[k];
+          if (currentForgotMethod === 'email' && acc.email && acc.email.toLowerCase() === target) accountExists = true;
+          if (currentForgotMethod === 'phone' && (acc.phone === target || k === target)) accountExists = true;
+        }
+      }
+
+      if (!accountExists) {
+        forgotMessage.textContent = `No account found with this ${currentForgotMethod === 'phone' ? 'phone number' : 'email address'}. Please check or register.`;
+        return;
+      }
+
+      forgotDestination = target;
+      forgotTargetLabel.textContent = target;
+      forgotMessage.textContent = 'Dispatching secure OTP code directly to your phone via SMS...';
+
+      const res = await dispatchOtp(target, 'PASSWORD_RESET');
+
+      if (!res.success) {
+        forgotMessage.textContent = res.error || 'Failed to dispatch verification code.';
+        return;
+      }
+
+      // Move to Step 2: OTP Entry
+      forgotMessage.textContent = '';
+      forgotStep1.style.display = 'none';
+      forgotStep2.style.display = 'block';
+      forgotOtpInput.focus();
+      startForgotCountdown(60);
+    });
+
+    // STEP 2: Verify OTP
+    verifyForgotOtpBtn.addEventListener('click', async () => {
+      const code = forgotOtpInput.value.trim();
+      if (code.length !== 6) {
+        forgotMessage.textContent = 'Please enter the 6-digit code received on your mobile phone.';
+        return;
+      }
+
+      forgotMessage.textContent = 'Verifying code...';
+      const check = await verifyOtpCode(forgotDestination, code, 'PASSWORD_RESET');
+
+      if (!check.verified) {
+        forgotMessage.textContent = check.error || 'Incorrect code. Please check the SMS on your phone.';
+        return;
+      }
+
+      forgotResetToken = check.resetToken;
+      forgotMessage.textContent = '';
+
+      // Move to Step 3: New Password
+      forgotStep2.style.display = 'none';
+      forgotStep3.style.display = 'block';
+      document.getElementById('newPassword').focus();
+    });
+
+    // STEP 3: Submit New Password
+    submitNewPasswordBtn.addEventListener('click', async () => {
+      const newPass = document.getElementById('newPassword').value;
+      const confirmPass = document.getElementById('confirmNewPassword').value;
+
+      if (newPass.length < 8) {
+        forgotMessage.textContent = 'Password must be at least 8 characters long.';
+        return;
+      }
+      if (newPass !== confirmPass) {
+        forgotMessage.textContent = 'New passwords do not match.';
+        return;
+      }
+
+      // 1. Try updating via backend API
+      try {
+        await fetch(`${API_BASE_URL}/auth/password-reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            destination: forgotDestination,
+            resetToken: forgotResetToken,
+            newPassword: newPass
+          })
+        });
+      } catch (e) {}
+
+      // 2. Update in localStorage demo accounts
+      const accounts = JSON.parse(localStorage.getItem('velocheck.demoAccounts') || '{}');
+      for (const k in accounts) {
+        const acc = accounts[k];
+        if (k === forgotDestination || acc.phone === forgotDestination || (acc.email && acc.email.toLowerCase() === forgotDestination.toLowerCase())) {
+          acc.password = newPass;
+          acc.updatedAt = new Date().toISOString();
+        }
+      }
+      localStorage.setItem('velocheck.demoAccounts', JSON.stringify(accounts));
+
+      alert('Password has been successfully reset! You can now sign in with your new password.');
+      showForm('signin');
+      if (currentForgotMethod === 'phone') {
+        setSignMethod('phone');
+        signinPhone.value = forgotDestination.replace('+91', '');
+      } else {
+        setSignMethod('email');
+        signinEmail.value = forgotDestination;
+      }
+      document.getElementById('signinPassword').focus();
+    });
+
+    // Step 2 controls
+    forgotChangeDestBtn.addEventListener('click', () => {
+      forgotStep2.style.display = 'none';
+      forgotStep1.style.display = 'block';
+      forgotMessage.textContent = '';
+      clearInterval(forgotTimerInterval);
+    });
+
+    resendForgotOtpBtn.addEventListener('click', async () => {
+      if (resendForgotOtpBtn.disabled) return;
+      forgotMessage.textContent = 'Resending SMS to your phone...';
+      const res = await dispatchOtp(forgotDestination, 'PASSWORD_RESET');
+      if (res.success) {
+        forgotMessage.textContent = 'New SMS code dispatched to your phone!';
+        startForgotCountdown(60);
+      } else {
+        forgotMessage.textContent = res.error || 'Cooldown active. Please wait.';
+      }
+    });
+
+    function startForgotCountdown(seconds) {
+      let remaining = seconds;
+      resendForgotOtpBtn.disabled = true;
+      forgotCountdown.textContent = remaining;
+      clearInterval(forgotTimerInterval);
+      forgotTimerInterval = setInterval(() => {
+        remaining -= 1;
+        forgotCountdown.textContent = remaining;
+        if (remaining <= 0) {
+          clearInterval(forgotTimerInterval);
+          resendForgotOtpBtn.disabled = false;
+          resendForgotOtpBtn.innerHTML = 'Resend code';
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

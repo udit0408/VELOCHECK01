@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vehicle Telemetry Dashboard — Two Wheeler — VELOCHECK</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#090e1a">
+</head>
+<body>
+  <header class="vc-header">
+    <div class="vc-brand">
+      <a href="homepage.html" class="icon-btn" style="text-decoration:none; margin-right:4px;" title="Back to Home">←</a>
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <h1 class="title">VELOCHECK</h1>
+        <p class="tagline">Two Wheeler Telemetry &amp; Safety Dashboard</p>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="vc-header-meta">
+        Last Reading<br><strong id="lastReadingTime">Connecting...</strong>
+      </div>
+      <a href="homepage.html" class="btn btn-outline btn-sm" style="text-decoration:none;">
+        🏠 Home
+      </a>
+    </div>
+  </header>
+
+  <main class="vc-page">
+    <!-- Top Dashboard Bar: Vehicle Selection & Data Source -->
+    <div class="vehicle-strip">
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div class="avatar">🏍️</div>
+        <div>
+          <p class="id-name">Two Wheeler · UP32 AW 7094</p>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+            <span class="status-chip" id="dataSourceBadge" style="font-size:10.5px; padding:2px 8px;">
+              ● Connecting Sensor...
+            </span>
+            <span style="font-size:11.5px; color:var(--text-tertiary);">Direct TPMS Wi-Fi</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="status-chip" id="overallStatus">Checking Status...</span>
+        <a href="car.html" class="btn btn-outline btn-sm" style="text-decoration:none;" title="Switch to Car Telemetry">
+          🚗 Switch to Car
+        </a>
+      </div>
+    </div>
+
+    <!-- AI Maintenance Insights & Status Banner -->
+    <section class="panel" style="background:linear-gradient(135deg, #131f38 0%, #0f172a 100%); border-color:var(--line-accent); padding:18px 20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">🤖</span>
+          <strong style="color:var(--signal-cyan); font-family:var(--font-display); font-size:14px; letter-spacing:0.5px; text-transform:uppercase;">AI Maintenance Summary</strong>
+        </div>
+        <span style="font-size:11px; color:var(--text-tertiary);">Two-Wheeler Safety Profile</span>
+      </div>
+      <p style="font-size:13.5px; line-height:1.5; color:var(--text-primary); margin-bottom:12px;">
+        Both tyres operating within optimal inflation limits. Front target: 28.0 PSI, Rear drive tyre target: 32.0 PSI. Tread depth is in factory-fresh condition following recent replacement.
+      </p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; font-size:12px; padding-top:10px; border-top:1px solid var(--line-dim);">
+        <div style="color:var(--text-secondary);">
+          ⏱️ <strong>Next Routine Due:</strong> 26 Jun 2030
+        </div>
+        <div style="color:var(--text-secondary);">
+          🛞 <strong>Specs:</strong> MRF Zapper (Front) / Revz (Rear)
+        </div>
+        <div style="color:var(--text-secondary);">
+          🏢 <strong>Assigned Hub:</strong> Gomti Nagar Express Bay 2
+        </div>
+      </div>
+    </section>
+
+    <!-- Clickable Health Overview Donut Chart -->
+    <section class="panel health-overview" id="healthOverview">
+      <div class="health-chart"></div>
+      <div class="health-overview-copy">
+        <p class="panel-label">Telemetry Health Distribution</p>
+        <p class="health-summary">Loading sensor telemetry...</p>
+        <p>Tap this distribution chart or any gauge to inspect historical readings, moving averages, and predictions.</p>
+      </div>
+    </section>
+
+    <!-- Tyre Pressure Section -->
+    <section class="metric-section">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <p class="metric-section-title">Tyre Pressure (PSI)</p>
+        <span style="font-size:11.5px; color:var(--text-secondary);">Target: Front 28 PSI | Rear 32 PSI</span>
+      </div>
+      <div class="gauge-grid">
+        <div class="gauge-card">
+          <span class="wheel-label">FRONT TYRE</span>
+          <div id="pressureFront"></div>
+        </div>
+        <div class="gauge-card">
+          <span class="wheel-label">REAR DRIVE TYRE</span>
+          <div id="pressureRear"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tyre Temperature Section -->
+    <section class="metric-section">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <p class="metric-section-title">Operating Temperature (°C)</p>
+        <span style="font-size:11.5px; color:var(--text-secondary);">Normal Running: &lt; 60.0 °C</span>
+      </div>
+      <div class="gauge-grid">
+        <div class="gauge-card">
+          <span class="wheel-label">FRONT TYRE</span>
+          <div id="tempFront"></div>
+        </div>
+        <div class="gauge-card">
+          <span class="wheel-label">REAR DRIVE TYRE</span>
+          <div id="tempRear"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tread Depth Section -->
+    <section class="metric-section">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <p class="metric-section-title">Measured Tread Depth (MM)</p>
+        <span style="font-size:11.5px; color:var(--text-secondary);">Brand New: 8.0 mm · Legal Min: 1.6 mm</span>
+      </div>
+      <div class="gauge-grid">
+        <div class="gauge-card">
+          <span class="wheel-label">FRONT TYRE</span>
+          <div id="treadFront"></div>
+        </div>
+        <div class="gauge-card">
+          <span class="wheel-label">REAR DRIVE TYRE</span>
+          <div id="treadRear"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Telemetry Trends: Last 20 Readings -->
+    <section class="metric-section">
+      <p class="metric-section-title">Telemetry Trends — Last 20 Measurements</p>
+      <div class="panel trend-panel">
+        <p class="panel-label">Tyre Pressure Trend (PSI)</p>
+        <div id="pressureTrend"></div>
+      </div>
+      <div class="panel trend-panel" style="margin-top:12px;">
+        <p class="panel-label">Thermal Dissipation Trend (°C)</p>
+        <div id="tempTrend"></div>
+      </div>
+    </section>
+
+    <!-- Recent Maintenance Activity & Quick Action Row -->
+    <section class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+        <h3 style="font-family:var(--font-display); font-size:16px; color:#fff;">Recent Workshop &amp; Maintenance Activity</h3>
+        <a href="maintenance.html" class="btn btn-outline btn-sm" style="text-decoration:none;">📋 View Full Service History</a>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:6px;">
+          <div>
+            <strong>26 Jun 2025</strong> · Full 2-Axle Tyre Replacement &amp; Spin Balance
+            <div style="font-size:11.5px; color:var(--text-secondary);">Velocheck Authorized Pitstop — Gomti Nagar · Job #JOB-5122-LKO</div>
+          </div>
+          <span class="status-chip" style="font-size:11px;">Factory Fresh</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Detailed Telemetry Modal -->
+  <dialog id="readingDetail" class="chart-detail-dialog">
+    <div class="detail-modal">
+      <header>
+        <h2>Measurement Telemetry Detail</h2>
+        <button class="icon-btn" aria-label="Close modal">×</button>
+      </header>
+      <div class="wheel-tabs"></div>
+      <div class="detail-modal-grid"></div>
+    </div>
+  </dialog>
+
+  <script src="app-navigation.js"></script>
+  <script src="gauge.js"></script>
+  <script src="live-dashboard.js"></script>
+  <script>
+    VeloCheckLive.startBike();
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+  </script>
+</body>
+</html>

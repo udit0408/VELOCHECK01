@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance History — VELOCHECK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#070a0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="auth-client.js"></script>
+    <script src="app-navigation.js" defer></script>
+</head>
+<body class="maintenance-page">
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark" style="border-color:var(--signal-cyan); box-shadow:0 0 14px var(--signal-cyan-glow);"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline" id="userTagline">Operator 9140 · Udit Veer Singh · <a href="homepage.html" style="color:var(--signal-cyan);text-decoration:none;">← Dashboard</a></p>
+            </div>
+        </div>
+        <div class="vc-header-meta">
+            Service Records Matrix<br>
+            <strong style="color:var(--signal-green);">Verified Digital Log</strong>
+        </div>
+    </header>
+
+    <main class="vc-page">
+        <!-- Back Navigation & Top Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <a href="homepage.html" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                ← Back to Dashboard
+            </a>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn btn-outline btn-sm" id="exportHistoryBtn">
+                    🖨️ Export Service Log
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" id="openLogModalBtn">
+                    ➕ Log Maintenance
+                </button>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             SUMMARY METRICS BAR
+             ========================================================= -->
+        <section class="maint-summary-grid">
+            <div class="maint-stat-card">
+                <span class="maint-stat-k">🗓️ Last Service</span>
+                <span class="maint-stat-v" id="statLastDate">14 Oct 2026</span>
+                <span class="maint-stat-sub">10 days ago · Bay #2</span>
+            </div>
+            <div class="maint-stat-card">
+                <span class="maint-stat-k">⏱️ Next Due Date</span>
+                <span class="maint-stat-v" id="statNextDue" style="color:var(--signal-amber);">14 Apr 2027</span>
+                <span class="maint-stat-sub">172 days remaining</span>
+            </div>
+            <div class="maint-stat-card">
+                <span class="maint-stat-k">🔬 Avg Tread Depth</span>
+                <span class="maint-stat-v" id="statAvgTread" style="color:var(--signal-green);">6.2 mm</span>
+                <span class="maint-stat-sub">Optimal (Health 85%)</span>
+            </div>
+            <div class="maint-stat-card">
+                <span class="maint-stat-k">🏢 Primary Workshop</span>
+                <span class="maint-stat-v" style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cyber Hub Bay</span>
+                <span class="maint-stat-sub">Hazratganj, Lucknow</span>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             FILTER & SEARCH CONTROLS
+             ========================================================= -->
+        <section class="maint-filter-bar">
+            <select id="vehicleFilter" style="width:auto; min-width:180px;">
+                <option value="ALL">🚗 All Vehicles (Fleet View)</option>
+                <option value="UP32 EV 2026" selected>Car — UP32 EV 2026 (4-Wheeler)</option>
+                <option value="UP32 AW 7094">Bike — UP32 AW 7094 (2-Wheeler)</option>
+            </select>
+
+            <select id="serviceTypeFilter" style="width:auto; min-width:190px;">
+                <option value="ALL">🛠️ All Service Categories</option>
+                <option value="BALANCING_ALIGNMENT">Dynamic Balancing &amp; Alignment</option>
+                <option value="REPLACEMENT">Tyre Replacement</option>
+                <option value="PUNCTURE_SEAL">Puncture &amp; Bead Seal</option>
+                <option value="CHECKUP">3D Laser Tread Checkup</option>
+            </select>
+
+            <input type="text" id="maintSearchInput" class="maint-filter-input" placeholder="🔍 Search by workshop, mechanic, brand, or job card...">
+        </section>
+
+        <!-- =========================================================
+             MAINTENANCE RECORDS TIMELINE LIST
+             ========================================================= -->
+        <div class="maint-list" id="maintRecordsContainer">
+            <!-- Populated dynamically by JavaScript -->
+        </div>
+
+        <!-- Next Service CTA Banner -->
+        <section class="panel" style="background:linear-gradient(135deg, rgba(0,229,255,0.06) 0%, rgba(13,24,41,0.8) 100%); border-color:var(--line-bright); text-align:center; padding:24px;">
+            <h3 style="font-family:var(--font-display); font-size:20px; font-weight:700; color:#fff; letter-spacing:1px; margin-bottom:6px;">
+                Due for a Scheduled Tyre Rotation or Laser Balancing?
+            </h3>
+            <p style="font-size:13px; color:var(--text-secondary); max-width:480px; margin:0 auto 16px;">
+                Keep your tread wear even and fuel efficiency optimal. Book an instant service center checkup pass or emergency mobile pitstop.
+            </p>
+            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+                <a href="towing.html" class="btn btn-primary" style="text-decoration:none;">
+                    🎟️ Book Diagnostic Pass / Service
+                </a>
+                <a href="subscription.html" class="btn btn-outline" style="text-decoration:none;">
+                    👑 View VIP Pitstop Discounts
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- =========================================================
+         LOG NEW MAINTENANCE MODAL
+         ========================================================= -->
+    <div class="vc-modal-backdrop" id="logModal" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
+        <div class="vc-modal" style="max-width:580px;">
+            <div class="vc-modal-head">
+                <div class="vc-modal-title">
+                    <span>🛠️</span>
+                    <span id="logModalTitle">Log New Maintenance Record</span>
+                </div>
+                <button type="button" class="vc-modal-close" id="closeLogModalBtn" aria-label="Close modal">✕</button>
+            </div>
+            <div class="vc-modal-body">
+                <form id="newMaintenanceForm" onsubmit="return false;">
+                    <div class="token-form-grid">
+                        <div class="token-field">
+                            <label for="logVehicleNumber">Vehicle Registration Plate *</label>
+                            <select id="logVehicleNumber" required>
+                                <option value="UP32 EV 2026" selected>CAR — UP32 EV 2026 (4-Wheeler)</option>
+                                <option value="UP32 AW 7094">BIKE — UP32 AW 7094 (2-Wheeler)</option>
+                            </select>
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logServiceDate">Service Date &amp; Time *</label>
+                            <input type="datetime-local" id="logServiceDate" required>
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logOdometer">Odometer Reading (km) *</label>
+                            <input type="number" id="logOdometer" placeholder="e.g. 19500" required min="0">
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logServiceType">Service Scope Category *</label>
+                            <select id="logServiceType" required>
+                                <option value="Dynamic Balancing &amp; Alignment">Dynamic Balancing &amp; 3D Laser Alignment</option>
+                                <option value="Tyre Replacement">Full / Partial Tyre Replacement</option>
+                                <option value="Puncture &amp; Bead Seal">Micro-Puncture Repair &amp; Bead Reseal</option>
+                                <option value="3D Laser Tread Scan">3D Laser Tread Scan &amp; TPMS Calibration</option>
+                                <option value="Nitrogen Refill">Nitrogen Purge &amp; High-Pressure Balancing</option>
+                            </select>
+                        </div>
+
+                        <!-- Tyre Section Details -->
+                        <div class="token-field full" style="border-top:1px solid var(--line-dim); padding-top:10px; margin-top:4px;">
+                            <label style="color:var(--signal-cyan); font-weight:700;">🛞 Tyre Section Details</label>
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logTyrePosition">Tyre Axle Position *</label>
+                            <select id="logTyrePosition" required>
+                                <option value="All 4 Tyres (FL, FR, RL, RR)" selected>All 4 Tyres (FL, FR, RL, RR)</option>
+                                <option value="Front Axle Pair (FL + FR)">Front Axle Pair (FL + FR)</option>
+                                <option value="Rear Axle Pair (RL + RR)">Rear Axle Pair (RL + RR)</option>
+                                <option value="Front Wheel (Bike)">Front Wheel (Bike)</option>
+                                <option value="Rear Drive Wheel (Bike)">Rear Drive Wheel (Bike)</option>
+                                <option value="Single Spare Wheel">Single Spare Wheel</option>
+                            </select>
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logTyreBrand">Tyre Brand, Spec &amp; Size *</label>
+                            <input type="text" id="logTyreBrand" placeholder="e.g. Bridgestone Turanza 195/65 R15" required>
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logTreadDepth">Measured Tread Depth (mm) *</label>
+                            <input type="number" id="logTreadDepth" step="0.1" min="1.0" max="12.0" placeholder="e.g. 6.2" required>
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logPressure">Calibrated Cold Pressure (PSI)</label>
+                            <input type="number" id="logPressure" step="0.5" placeholder="e.g. 33.0" value="33.0">
+                        </div>
+
+                        <!-- Workshop Details -->
+                        <div class="token-field full" style="border-top:1px solid var(--line-dim); padding-top:10px; margin-top:4px;">
+                            <label style="color:var(--signal-amber); font-weight:700;">🏢 Workshop &amp; Technician Details</label>
+                        </div>
+
+                        <div class="token-field full">
+                            <label for="logWorkshopName">Workshop / Tyre Center Name *</label>
+                            <select id="logWorkshopName" required>
+                                <option value="Velocheck Cyber Hub - Hazratganj (Central Diagnostic Bay)" selected>🏢 Velocheck Cyber Hub · Hazratganj (Bay #2)</option>
+                                <option value="Velocheck Authorized Pitstop - Gomti Nagar (Express Bay 2)">⚡ Velocheck Authorized Pitstop · Gomti Nagar (Express Bay 2)</option>
+                                <option value="Velocheck Diagnostic Station - Alambagh Hub">🛠️ Velocheck Diagnostic Station · Alambagh Hub</option>
+                                <option value="Velocheck Highway Express - Shaheed Path">🛣️ Velocheck Highway Express · Shaheed Path</option>
+                            </select>
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logTechnician">Lead Technician Name</label>
+                            <input type="text" id="logTechnician" placeholder="e.g. Neeraj Yadav (Certified Tech)">
+                        </div>
+
+                        <div class="token-field">
+                            <label for="logCost">Total Service Cost (₹)</label>
+                            <input type="number" id="logCost" placeholder="e.g. 1850" min="0">
+                        </div>
+
+                        <div class="token-field full">
+                            <label for="logNotes">Diagnostic Findings / Specific Work Performed</label>
+                            <input type="text" id="logNotes" placeholder="e.g. Laser alignment Toe adjusted +0.08°, nitrogen purged to 99.2%, clean bead seal">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary" id="saveMaintenanceBtn" style="flex:1; padding:12px;">
+                            💾 SAVE &amp; RECORD MAINTENANCE ENTRY
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         VIEW OFFICIAL JOB CARD / INVOICE MODAL
+         ========================================================= -->
+    <div class="vc-modal-backdrop" id="jobCardModal" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle">
+        <div class="vc-modal" style="max-width:600px;">
+            <div class="vc-modal-head">
+                <div class="vc-modal-title">
+                    <span>📋</span>
+                    <span id="jobModalTitle">Official Service Job Card</span>
+                </div>
+                <button type="button" class="vc-modal-close" id="closeJobCardModalBtn" aria-label="Close modal">✕</button>
+            </div>
+            <div class="vc-modal-body" id="jobCardPrintArea">
+                <!-- Dynamically rendered -->
+            </div>
+            <div style="padding:14px 20px; border-top:1px solid var(--line-dim); display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                    🖨️ Print Job Card
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         JAVASCRIPT CONTROLLER FOR MAINTENANCE HISTORY
+         ========================================================= -->
+    <script>
+        (function() {
+            // Seed Records Data
+            const DEFAULT_RECORDS = [
+                {
+                    id: "JOB-9140-LKO",
+                    date: "2026-10-14T11:30:00",
+                    formattedDate: "14 Oct 2026 · 11:30 AM",
+                    odometer: "18,420 km",
+                    vehiclePlate: "UP32 EV 2026",
+                    vehicleType: "Car (4-Wheeler)",
+                    serviceCategory: "BALANCING_ALIGNMENT",
+                    serviceTitle: "Dynamic Wheel Balancing & 3D Laser Alignment",
+                    status: "VERIFIED & OPTIMAL",
+                    tyre: {
+                        position: "All 4 Tyres (FL, FR, RL, RR)",
+                        brand: "Bridgestone Turanza 195/65 R15 (91V)",
+                        treadDepth: 6.2,
+                        treadStatus: "Optimal (> 4.0mm)",
+                        pressure: "33.0 PSI (Cold target 32 PSI)",
+                        scopeTags: [
+                            "🔬 3D Laser Alignment (+0.08° Toe)",
+                            "⚖️ Dynamic Balancing (15g clip weights)",
+                            "📟 TPMS Nitrogen Purge (99.2%)",
+                            "🔍 Bead Micro-Fissure Clean"
+                        ],
+                        notes: "Zero irregular tyre cupping detected. Full four-wheel camber and caster within OEM factory tolerances."
+                    },
+                    workshop: {
+                        name: "Velocheck Cyber Hub - Hazratganj",
+                        bay: "Central Diagnostic Bay #2",
+                        address: "Hazratganj, Lucknow, UP",
+                        technician: "Neeraj Yadav (Master Certified Tech #TECH-419)",
+                        phone: "9456923238",
+                        tokenRef: "TOW-7706-LKO",
+                        cost: "₹1,850",
+                        discountApplied: "PRO VIP 15% (Saved ₹277)",
+                        nextDue: "14 Apr 2027 or 28,000 km"
+                    }
+                },
+                {
+                    id: "JOB-5122-LKO",
+                    date: "2025-06-26T16:15:00",
+                    formattedDate: "26 Jun 2025 · 04:15 PM",
+                    odometer: "12,150 km",
+                    vehiclePlate: "UP32 AW 7094",
+                    vehicleType: "Bike (2-Wheeler)",
+                    serviceCategory: "REPLACEMENT",
+                    serviceTitle: "Full Tyre Replacement & Alloy Bead Reseal",
+                    status: "FACTORY FRESH",
+                    tyre: {
+                        position: "Front & Rear Wheels",
+                        brand: "MRF Zapper FX1 90/90-17 & MRF Revz 130/70-R17",
+                        treadDepth: 8.0,
+                        treadStatus: "Brand New (8.0mm)",
+                        pressure: "Front: 28.0 PSI | Rear: 32.0 PSI",
+                        scopeTags: [
+                            "🔄 Complete 2-Axle Tyre Replacement",
+                            "⚖️ High-Speed Dynamic Spin Balance",
+                            "🔩 High-Durability Brass Valve Stem",
+                            "📟 Nitrogen 100% Purity Fill"
+                        ],
+                        notes: "Both tyres replaced with factory certified compound. Alloy rim bead cleaned and sealed with chemical bead sealant."
+                    },
+                    workshop: {
+                        name: "Velocheck Authorized Pitstop - Gomti Nagar",
+                        bay: "Express Bay 2",
+                        address: "Vibhuti Khand, Gomti Nagar, Lucknow",
+                        technician: "Shivam Shukla (Wheel & Suspension Specialist)",
+                        phone: "8965234238",
+                        tokenRef: "TOW-5122-LKO",
+                        cost: "₹4,600",
+                        discountApplied: "Standard Warranty Included",
+                        nextDue: "26 Jun 2030 or 35,000 km"
+                    }
+                },
+                {
+                    id: "JOB-3401-LKO",
+                    date: "2025-03-12T14:45:00",
+                    formattedDate: "12 Mar 2025 · 02:45 PM",
+                    odometer: "11,200 km",
+                    vehiclePlate: "UP32 EV 2026",
+                    vehicleType: "Car (4-Wheeler)",
+                    serviceCategory: "PUNCTURE_SEAL",
+                    serviceTitle: "Micro-Puncture Repair & Bead Seal Maintenance",
+                    status: "SEALED & TESTED",
+                    tyre: {
+                        position: "Rear Left (RL)",
+                        brand: "Bridgestone Turanza 195/65 R15",
+                        treadDepth: 6.8,
+                        treadStatus: "Healthy (6.8mm)",
+                        pressure: "32.5 PSI (Target 32 PSI)",
+                        scopeTags: [
+                            "🔍 2mm Radial Nail Puncture Repair",
+                            "🩹 Mushroom Patch Internal Seal",
+                            "🔬 Cold Chemical Vulcanization",
+                            "🌊 Submersion Tank Leak Test Clean"
+                        ],
+                        notes: "Internal radial stem patch applied to 2mm tread puncture. 100% airtight leak test verified in diagnostic tank."
+                    },
+                    workshop: {
+                        name: "Velocheck Diagnostic Station - Alambagh Hub",
+                        bay: "Rapid Bay 1",
+                        address: "Alambagh, Lucknow",
+                        technician: "Sameer Khan (Senior Diagnostic Engineer)",
+                        phone: "8383629470",
+                        tokenRef: "TOW-3401-LKO",
+                        cost: "₹450",
+                        discountApplied: "Zero Deductible",
+                        nextDue: "Scheduled Routine Re-check"
+                    }
+                }
+            ];
+
+            // LocalStorage Key
+            const STORAGE_KEY = "velocheck_maintenance_records";
+
+            function getRecords() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        return JSON.parse(saved);
+                    }
+                } catch(e) {}
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_RECORDS));
+                return DEFAULT_RECORDS;
+            }
+
+            function saveRecords(records) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+            }
+
+            // DOM Elements
+            const container = document.getElementById("maintRecordsContainer");
+            const vehicleFilter = document.getElementById("vehicleFilter");
+            const serviceTypeFilter = document.getElementById("serviceTypeFilter");
+            const searchInput = document.getElementById("maintSearchInput");
+
+            const logModal = document.getElementById("logModal");
+            const openLogModalBtn = document.getElementById("openLogModalBtn");
+            const closeLogModalBtn = document.getElementById("closeLogModalBtn");
+            const newMaintenanceForm = document.getElementById("newMaintenanceForm");
+            const logServiceDate = document.getElementById("logServiceDate");
+
+            const jobCardModal = document.getElementById("jobCardModal");
+            const closeJobCardModalBtn = document.getElementById("closeJobCardModalBtn");
+            const jobCardPrintArea = document.getElementById("jobCardPrintArea");
+
+            // Set default date for new log
+            if (logServiceDate) {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                logServiceDate.value = now.toISOString().slice(0, 16);
+            }
+
+            // Render records
+            function renderTimeline() {
+                const records = getRecords();
+                const selectedVeh = vehicleFilter.value;
+                const selectedType = serviceTypeFilter.value;
+                const query = searchInput.value.toLowerCase().trim();
+
+                const filtered = records.filter(rec => {
+                    if (selectedVeh !== "ALL" && rec.vehiclePlate !== selectedVeh) return false;
+                    if (selectedType !== "ALL" && rec.serviceCategory !== selectedType) return false;
+                    if (query) {
+                        const hay = (
+                            rec.id + " " +
+                            rec.vehiclePlate + " " +
+                            rec.serviceTitle + " " +
+                            rec.workshop.name + " " +
+                            rec.workshop.technician + " " +
+                            rec.tyre.brand + " " +
+                            rec.tyre.position
+                        ).toLowerCase();
+                        if (!hay.includes(query)) return false;
+                    }
+                    return true;
+                });
+
+                if (filtered.length === 0) {
+                    container.innerHTML = 
+                        '<div class="panel" style="text-align:center; padding:40px 20px; color:var(--text-secondary);">' +
+                        '<div style="font-size:36px; margin-bottom:8px;">🔍</div>' +
+                        '<h3 style="color:#fff; margin-bottom:6px;">No Maintenance Records Found</h3>' +
+                        '<p style="font-size:13px; max-width:340px; margin:0 auto 16px;">No logs match your filter criteria. Try choosing another vehicle or log a new service entry above.</p>' +
+                        '<button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById(\'openLogModalBtn\').click()">➕ Log New Maintenance</button>' +
+                        '</div>';
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                filtered.forEach(rec => {
+                    const isBike = rec.vehiclePlate.includes("AW 7094") || rec.vehicleType.toLowerCase().includes("bike");
+                    const vehIcon = isBike ? "🏍️" : "🚗";
+                    const treadPct = Math.min(100, Math.round((rec.tyre.treadDepth / 8.0) * 100));
+                    const isWarning = rec.tyre.treadDepth < 3.0;
+
+                    const card = document.createElement("div");
+                    card.className = "maint-card";
+                    card.innerHTML = 
+                        `<div class="maint-card-header">
+                            <div class="maint-card-title-group">
+                                <div class="maint-card-date">
+                                    <span>🗓️ ${rec.formattedDate}</span>
+                                    <span style="font-size:12px; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:4px; border:1px solid var(--line); color:var(--text-secondary);">
+                                        📟 ${rec.odometer}
+                                    </span>
+                                </div>
+                                <div class="maint-card-meta">
+                                    <strong>${vehIcon} ${rec.vehiclePlate}</strong> (${rec.vehicleType}) · ${rec.serviceTitle}
+                                </div>
+                            </div>
+                            <span class="status-chip ${isWarning ? 'warn' : ''}">
+                                ${rec.status}
+                            </span>
+                        </div>
+
+                        <div class="maint-sections-grid">
+                            <!-- Section 1: Tyre Section & Diagnostics -->
+                            <div class="maint-sub-panel">
+                                <div class="maint-sub-title">
+                                    <span>🛞</span> Tyre Diagnostics &amp; Specification
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Tyre Axle Position</span>
+                                    <span class="v" style="color:var(--signal-cyan);">${rec.tyre.position}</span>
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Brand &amp; Profile Spec</span>
+                                    <span class="v">${rec.tyre.brand}</span>
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Calibrated Pressure</span>
+                                    <span class="v">${rec.tyre.pressure}</span>
+                                </div>
+
+                                <div class="tread-depth-wrap">
+                                    <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                                        <span style="color:var(--text-secondary);">Recorded Tread Depth</span>
+                                        <strong style="color:${isWarning ? 'var(--signal-amber)' : 'var(--signal-green)'};">${rec.tyre.treadDepth} mm (${treadPct}% Life)</strong>
+                                    </div>
+                                    <div class="tread-depth-bar">
+                                        <div class="tread-depth-fill ${isWarning ? 'warning' : ''}" style="width:${treadPct}%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="maint-chips-row">
+                                    ${rec.tyre.scopeTags.map(tag => `<span class="maint-work-chip">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Workshop & Invoice Details -->
+                            <div class="maint-sub-panel">
+                                <div class="maint-sub-title" style="color:var(--signal-amber);">
+                                    <span>🏢</span> Workshop &amp; Certification
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Service Centre</span>
+                                    <span class="v" style="color:#fff;">${rec.workshop.name}</span>
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Location / Station Bay</span>
+                                    <span class="v">${rec.workshop.bay}</span>
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Lead Technician</span>
+                                    <span class="v">${rec.workshop.technician}</span>
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Workshop Contact</span>
+                                    <span class="v">
+                                        <a href="tel:+91${rec.workshop.phone}" style="color:var(--signal-cyan); text-decoration:none;">
+                                            📞 ${rec.workshop.phone}
+                                        </a>
+                                    </span>
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Official Job Card ID</span>
+                                    <span class="v" style="font-family:var(--font-display); letter-spacing:1px; color:var(--signal-cyan);">${rec.id}</span>
+                                </div>
+                                <div class="maint-data-row">
+                                    <span class="k">Billed Amount</span>
+                                    <span class="v" style="color:var(--signal-green); font-size:14px;">${rec.workshop.cost} <small style="color:var(--text-tertiary); font-size:10px;">(${rec.workshop.discountApplied})</small></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="maint-card-footer">
+                            <span style="font-size:12px; color:var(--text-secondary);">
+                                ⏱️ <strong>Next Due Milestone:</strong> ${rec.workshop.nextDue}
+                            </span>
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" class="btn btn-outline btn-sm view-job-btn" data-id="${rec.id}">
+                                    📄 View Job Card
+                                </button>
+                                <a href="towing.html" class="btn btn-primary btn-sm" style="text-decoration:none;">
+                                    🎟️ Schedule Service
+                                </a>
+                            </div>
+                        </div>`;
+
+                    card.querySelector(".view-job-btn").addEventListener("click", () => openJobCard(rec));
+                    container.appendChild(card);
+                });
+            }
+
+            // View Job Card Modal
+            function openJobCard(rec) {
+                jobCardPrintArea.innerHTML = 
+                    `<div style="background:rgba(255,255,255,0.03); border:1px solid var(--line-bright); border-radius:8px; padding:20px; font-family:var(--font-body);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--line-dim); padding-bottom:14px; margin-bottom:16px;">
+                            <div>
+                                <h2 style="font-family:var(--font-display); font-size:20px; color:#fff; letter-spacing:1px; margin-bottom:4px;">VELOCHECK CERTIFIED SERVICE JOB CARD</h2>
+                                <p style="font-size:12px; color:var(--signal-cyan);">TELEMETRIC TYRE MAINTENANCE PROTOCOL · LUCKNOW CENTRAL HUB</p>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-family:var(--font-display); font-size:18px; font-weight:800; color:var(--signal-gold); letter-spacing:1px;">${rec.id}</div>
+                                <span style="font-size:11px; color:var(--text-tertiary);">${rec.formattedDate}</span>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; font-size:13px;">
+                            <div>
+                                <strong style="color:var(--text-secondary); display:block; font-size:11px; text-transform:uppercase;">Vehicle &amp; Operator</strong>
+                                <div style="font-size:15px; font-weight:700; color:#fff; margin-top:2px;">${rec.vehiclePlate} (${rec.vehicleType})</div>
+                                <div style="color:var(--text-secondary); font-size:12px;">Odometer: ${rec.odometer}</div>
+                            </div>
+                            <div>
+                                <strong style="color:var(--text-secondary); display:block; font-size:11px; text-transform:uppercase;">Workshop Bay</strong>
+                                <div style="font-size:14px; font-weight:600; color:#fff; margin-top:2px;">${rec.workshop.name}</div>
+                                <div style="color:var(--text-secondary); font-size:12px;">${rec.workshop.address} · Bay #2</div>
+                            </div>
+                        </div>
+
+                        <div style="background:rgba(0,0,0,0.4); border:1px solid var(--line-dim); border-radius:6px; padding:12px; margin-bottom:16px; font-size:13px;">
+                            <strong style="color:var(--signal-cyan); display:block; margin-bottom:8px;">Scope of Work Performed:</strong>
+                            <div style="margin-bottom:8px; color:#fff;">• ${rec.serviceTitle}</div>
+                            <div style="margin-bottom:8px; color:var(--text-secondary);">• Tyre Brand/Spec: <strong style="color:#fff;">${rec.tyre.brand}</strong> (${rec.tyre.position})</div>
+                            <div style="margin-bottom:8px; color:var(--text-secondary);">• Measured Tread Depth: <strong style="color:var(--signal-green);">${rec.tyre.treadDepth} mm</strong> | Cold Target: <strong style="color:#fff;">${rec.tyre.pressure}</strong></div>
+                            <div style="font-size:12px; color:var(--text-tertiary);">Notes: ${rec.tyre.notes}</div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line-dim); padding-top:12px;">
+                            <div>
+                                <span style="font-size:11px; color:var(--text-tertiary); display:block;">Certified Master Sign-off:</span>
+                                <strong style="font-size:13px; color:#fff;">${rec.workshop.technician}</strong>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="font-size:11px; color:var(--text-tertiary); display:block;">Total Certified Billed:</span>
+                                <strong style="font-size:20px; font-family:var(--font-display); color:var(--signal-green);">${rec.workshop.cost}</strong>
+                            </div>
+                        </div>
+                    </div>`;
+
+                jobCardModal.classList.add("open");
+                document.body.style.overflow = "hidden";
+            }
+
+            closeJobCardModalBtn?.addEventListener("click", () => {
+                jobCardModal.classList.remove("open");
+                document.body.style.overflow = "";
+            });
+            jobCardModal?.addEventListener("click", (e) => {
+                if (e.target === jobCardModal) {
+                    jobCardModal.classList.remove("open");
+                    document.body.style.overflow = "";
+                }
+            });
+
+            // Filter Event Listeners
+            vehicleFilter?.addEventListener("change", renderTimeline);
+            serviceTypeFilter?.addEventListener("change", renderTimeline);
+            searchInput?.addEventListener("input", renderTimeline);
+
+            // Log Modal Listeners
+            openLogModalBtn?.addEventListener("click", () => {
+                logModal.classList.add("open");
+                document.body.style.overflow = "hidden";
+            });
+            closeLogModalBtn?.addEventListener("click", () => {
+                logModal.classList.remove("open");
+                document.body.style.overflow = "";
+            });
+            logModal?.addEventListener("click", (e) => {
+                if (e.target === logModal) {
+                    logModal.classList.remove("open");
+                    document.body.style.overflow = "";
+                }
+            });
+
+            // Form Submit for new maintenance record
+            newMaintenanceForm?.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const plate = document.getElementById("logVehicleNumber").value;
+                const rawDate = document.getElementById("logServiceDate").value;
+                const odo = document.getElementById("logOdometer").value;
+                const serviceTitle = document.getElementById("logServiceType").value;
+                const pos = document.getElementById("logTyrePosition").value;
+                const brand = document.getElementById("logTyreBrand").value;
+                const tread = parseFloat(document.getElementById("logTreadDepth").value) || 6.0;
+                const pressure = document.getElementById("logPressure").value || "33.0";
+                const workshop = document.getElementById("logWorkshopName").value;
+                const tech = document.getElementById("logTechnician").value || "Neeraj Yadav (Certified Tech)";
+                const cost = document.getElementById("logCost").value || "1500";
+                const notes = document.getElementById("logNotes").value || "Routine scheduled diagnostic maintenance completed.";
+
+                const randomId = "JOB-" + Math.floor(1000 + Math.random() * 9000) + "-LKO";
+                const dateObj = new Date(rawDate);
+                const formattedDate = dateObj.toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }) + " · " + dateObj.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' });
+
+                const isBike = plate.includes("AW 7094");
+
+                const newRec = {
+                    id: randomId,
+                    date: rawDate,
+                    formattedDate: formattedDate,
+                    odometer: Number(odo).toLocaleString("en-IN") + " km",
+                    vehiclePlate: plate,
+                    vehicleType: isBike ? "Bike (2-Wheeler)" : "Car (4-Wheeler)",
+                    serviceCategory: serviceTitle.includes("Replacement") ? "REPLACEMENT" : (serviceTitle.includes("Puncture") ? "PUNCTURE_SEAL" : "BALANCING_ALIGNMENT"),
+                    serviceTitle: serviceTitle,
+                    status: tread > 4 ? "VERIFIED & OPTIMAL" : "ATTENTION RECOMMENDED",
+                    tyre: {
+                        position: pos,
+                        brand: brand,
+                        treadDepth: tread,
+                        treadStatus: tread > 4 ? "Optimal (> 4.0mm)" : "Low Tread (< 3.0mm)",
+                        pressure: pressure + " PSI",
+                        scopeTags: [
+                            serviceTitle,
+                            "🛞 " + pos,
+                            "📟 " + pressure + " PSI Cold Lock"
+                        ],
+                        notes: notes
+                    },
+                    workshop: {
+                        name: workshop,
+                        bay: "Active Bay",
+                        address: "Lucknow Hub Station",
+                        technician: tech,
+                        phone: "9456923238",
+                        tokenRef: "TOW-NEW-LKO",
+                        cost: "₹" + cost,
+                        discountApplied: "Velocheck Verified",
+                        nextDue: "+6 Months or 10,000 km"
+                    }
+                };
+
+                const records = getRecords();
+                records.unshift(newRec);
+                saveRecords(records);
+
+                logModal.classList.remove("open");
+                document.body.style.overflow = "";
+                newMaintenanceForm.reset();
+
+                renderTimeline();
+                alert(`✓ Service record ${randomId} successfully added to your maintenance history!`);
+            });
+
+            // Export Log Button
+            document.getElementById("exportHistoryBtn")?.addEventListener("click", () => {
+                window.print();
+            });
+
+            // Populate user name in tagline
+            try {
+                const uStr = localStorage.getItem("velocheck.currentUser");
+                if (uStr) {
+                    const u = JSON.parse(uStr);
+                    const tagEl = document.getElementById("userTagline");
+                    if (tagEl && u.name) {
+                        tagEl.innerHTML = `Operator 9140 · ${u.name} · <a href="homepage.html" style="color:var(--signal-cyan);text-decoration:none;">← Dashboard</a>`;
+                    }
+                }
+            } catch(e) {}
+
+            renderTimeline();
+        })();
+    </script>
+    <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

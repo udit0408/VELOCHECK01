@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — VELOCHECK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#070a0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        .danger-panel {
+            border: 1px solid rgba(255, 59, 48, 0.4) !important;
+            background: rgba(255, 59, 48, 0.03) !important;
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.08);
+        }
+        .danger-panel .panel-label {
+            color: var(--signal-red) !important;
+        }
+        .btn-danger {
+            background: #ff3b30 !important;
+            color: #ffffff !important;
+            border: 1px solid #ff3b30 !important;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            transition: all 0.2s ease;
+        }
+        .btn-danger:hover {
+            background: #d32f2f !important;
+            box-shadow: 0 0 15px rgba(255, 59, 48, 0.4);
+        }
+        .status-msg {
+            margin-top: 10px;
+            font-size: 12px;
+            text-align: center;
+            min-height: 18px;
+            font-weight: 600;
+        }
+        .account-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--signal-cyan);
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+        .user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(9, 13, 19, 0.7);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+<script src="app-navigation.js"></script>
+<script src="auth-client.js"></script>
+<body>
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline">System &amp; Security Settings</p>
+            </div>
+        </div>
+        <a href="homepage.html" class="icon-btn" style="text-decoration:none;">←</a>
+    </header>
+
+    <main class="vc-page-narrow">
+        <!-- ============================================================
+             1. USER ACCOUNT & SECURITY PROFILE
+             ============================================================ -->
+        <section class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <p class="panel-label" style="margin: 0;">Account Profile</p>
+                <span class="account-badge" id="accountRoleBadge">USER SESSION</span>
+            </div>
+
+            <!-- Active User Details -->
+            <div id="loggedInView">
+                <div class="user-card">
+                    <div>
+                        <div id="userNameDisplay" style="font-family: var(--font-display); font-size: 16px; font-weight: 700; color: #fff;">
+                            Loading operator...
+                        </div>
+                        <div id="userContactDisplay" style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                            Checking authentication...
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="handleSignOut()">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+
+            <!-- Logged Out View -->
+            <div id="loggedOutView" style="display: none; text-align: center; padding: 10px 0;">
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+                    You are currently using guest mode. Sign in to sync your vehicles and manage security.
+                </p>
+                <a href="auth.html" class="btn btn-block" style="text-decoration: none;">SIGN IN / REGISTER →</a>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             2. CHANGE / UPDATE PASSWORD SECTION
+             ============================================================ -->
+        <section class="panel" style="margin-top: 18px;" id="passwordSection">
+            <p class="panel-label">Update Account Password</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">
+                Change your account password. Must contain at least 8 characters.
+            </p>
+
+            <form id="changePasswordForm" onsubmit="event.preventDefault(); handleChangePassword();">
+                <div class="field" style="margin-bottom: 12px;">
+                    <label for="currentPassword">Current Password</label>
+                    <input id="currentPassword" type="password" placeholder="Enter your current password" autocomplete="current-password" required>
+                </div>
+
+                <div class="field" style="margin-bottom: 12px;">
+                    <label for="newPassword">New Password (minimum 8 characters)</label>
+                    <input id="newPassword" type="password" placeholder="Enter new strong password" minlength="8" autocomplete="new-password" required>
+                </div>
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label for="confirmNewPassword">Confirm New Password</label>
+                    <input id="confirmNewPassword" type="password" placeholder="Re-type new password" minlength="8" autocomplete="new-password" required>
+                </div>
+
+                <button type="submit" class="btn btn-block" id="changePasswordSubmitBtn">
+                    UPDATE PASSWORD
+                </button>
+                <div id="changePasswordMsg" class="status-msg"></div>
+            </form>
+        </section>
+
+        <!-- ============================================================
+             3. DANGER ZONE: ACCOUNT DELETION
+             ============================================================ -->
+        <section class="panel danger-panel" style="margin-top: 18px;" id="deleteAccountSection">
+            <p class="panel-label">Danger Zone: Delete Account</p>
+            <p style="font-size: 12px; color: #ff857f; margin-bottom: 14px; line-height: 1.5;">
+                Permanently deletes your VELOCHECK profile, vehicle garage, tyre telemetry history, and active sessions. <strong>This action cannot be undone.</strong>
+            </p>
+
+            <form id="deleteAccountForm" onsubmit="event.preventDefault(); handleDeleteAccount();">
+                <div class="field" style="margin-bottom: 12px;">
+                    <label for="deletePassword" style="color: #ff857f;">Confirm Password</label>
+                    <input id="deletePassword" type="password" placeholder="Enter your account password" autocomplete="current-password" required style="border-color: rgba(255, 59, 48, 0.4);">
+                </div>
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label for="deleteConfirmationText" style="color: #ff857f;">Type <strong>DELETE</strong> to confirm</label>
+                    <input id="deleteConfirmationText" type="text" placeholder="Type DELETE here" required style="border-color: rgba(255, 59, 48, 0.4); text-transform: uppercase; font-weight: 700; letter-spacing: 2px;">
+                </div>
+
+                <button type="submit" class="btn btn-block btn-danger" id="deleteAccountSubmitBtn">
+                    DELETE ACCOUNT PERMANENTLY
+                </button>
+                <div id="deleteAccountMsg" class="status-msg"></div>
+            </form>
+        </section>
+
+        <!-- ============================================================
+             4. ESP32 DIRECT WI-FI SETUP
+             ============================================================ -->
+        <section class="panel" style="margin-top: 18px;">
+            <p class="panel-label">ESP32 Direct Wi-Fi Setup</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">
+                Connect your phone's Wi-Fi directly to the ESP32 access point <strong>VELOCHECK-WIFI</strong> to read telemetry without using any laptop or router.
+            </p>
+            
+            <div class="field" style="margin-bottom: 12px;">
+                <label for="apiEndpoint">ESP32 Base URL</label>
+                <input id="apiEndpoint" type="url" placeholder="http://192.168.4.1" value="http://192.168.4.1">
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline" style="padding: 6px 10px; font-size: 11px;" onclick="setPreset('http://192.168.4.1')">
+                    ESP32 SoftAP (192.168.4.1)
+                </button>
+                <button type="button" class="btn btn-outline" style="padding: 6px 10px; font-size: 11px;" onclick="setPreset('http://localhost:8000')">
+                    Localhost:8000
+                </button>
+            </div>
+
+            <button type="button" id="pingBtn" class="btn btn-block" onclick="testConnection()">
+                ⚡ Ping ESP32 Connection
+            </button>
+            <div id="pingResult" class="status-msg"></div>
+        </section>
+
+        <!-- ============================================================
+             5. TELEMETRY PREFERENCES
+             ============================================================ -->
+        <section class="panel" style="margin-top: 18px;">
+            <p class="panel-label">Telemetry Preferences</p>
+            
+            <div class="field" style="margin-bottom: 14px;">
+                <label for="pollInterval">Poll Rate</label>
+                <select id="pollInterval">
+                    <option value="1000">Fast (1 second)</option>
+                    <option value="2000" selected>Normal (2 seconds)</option>
+                    <option value="5000">Battery Saver (5 seconds)</option>
+                </select>
+            </div>
+
+            <div class="field" style="margin-bottom: 14px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="simToggle" checked style="width: 18px; height: 18px;">
+                    <span style="font-size: 13px; color: var(--text-primary);">Fallback to Demo Simulator when ESP32 is off</span>
+                </label>
+            </div>
+
+            <button type="button" class="btn btn-block" onclick="saveSettings()">Save Configuration</button>
+        </section>
+
+        <!-- ============================================================
+             6. ABOUT SYSTEM
+             ============================================================ -->
+        <section class="panel" style="margin-top: 18px;">
+            <p class="panel-label">About System</p>
+            <ul class="kv-list">
+                <li class="kv-row"><span class="k">App Version</span><span class="v">2.5.0-security-hardened</span></li>
+                <li class="kv-row"><span class="k">Protocol</span><span class="v">HTTP / REST JSON (CORS)</span></li>
+                <li class="kv-row"><span class="k">Security Architecture</span><span class="v">Row-Level Security (RLS) + Bcrypt</span></li>
+                <li class="kv-row"><span class="k">Predictor Model</span><span class="v">Ordinary Least Squares Trend</span></li>
+            </ul>
+        </section>
+    </main>
+
+    <script>
+        const API_BASE_URL = window.VELOCHECK_API_URL || 'http://localhost:5000/api';
+        let currentUser = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Load Wi-Fi settings
+            const saved = localStorage.getItem("velocheck.apiBase") || "http://192.168.4.1";
+            document.getElementById("apiEndpoint").value = saved;
+            const sim = localStorage.getItem("velocheck.simFallback");
+            if (sim !== null) {
+                document.getElementById("simToggle").checked = sim === "true";
+            }
+
+            // Load Authenticated User Profile
+            loadUserProfile();
+        });
+
+        // -------------------------------------------------------------
+        // USER SESSION MANAGEMENT
+        // -------------------------------------------------------------
+        function loadUserProfile() {
+            try {
+                const userJson = localStorage.getItem('velocheck.currentUser');
+                if (userJson) {
+                    currentUser = JSON.parse(userJson);
+                    document.getElementById('userNameDisplay').textContent = currentUser.name || 'Velocheck Operator';
+                    const contact = currentUser.phone || currentUser.email || 'Verified Account';
+                    document.getElementById('userContactDisplay').textContent = contact;
+                    document.getElementById('accountRoleBadge').textContent = (currentUser.role || 'USER').toUpperCase() + ' · ACTIVE';
+                    document.getElementById('loggedInView').style.display = 'block';
+                    document.getElementById('loggedOutView').style.display = 'none';
+                    document.getElementById('passwordSection').style.display = 'block';
+                    document.getElementById('deleteAccountSection').style.display = 'block';
+                } else {
+                    currentUser = null;
+                    document.getElementById('loggedInView').style.display = 'none';
+                    document.getElementById('loggedOutView').style.display = 'block';
+                    document.getElementById('accountRoleBadge').textContent = 'GUEST';
+                    document.getElementById('passwordSection').style.display = 'none';
+                    document.getElementById('deleteAccountSection').style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Error reading user profile:", err);
+            }
+        }
+
+        function handleSignOut() {
+            if (confirm("Are you sure you want to sign out of VELOCHECK?")) {
+                localStorage.removeItem('velocheck.currentUser');
+                sessionStorage.removeItem('velocheck_token');
+                sessionStorage.removeItem('velocheck_user');
+                window.location.href = 'auth.html';
+            }
+        }
+
+        // -------------------------------------------------------------
+        // UPDATE PASSWORD HANDLER
+        // -------------------------------------------------------------
+        async function handleChangePassword() {
+            const currentPass = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmNewPassword').value;
+            const msgEl = document.getElementById('changePasswordMsg');
+            const submitBtn = document.getElementById('changePasswordSubmitBtn');
+
+            msgEl.textContent = '';
+            msgEl.style.color = 'var(--signal-amber)';
+
+            if (!currentPass || !newPass) {
+                msgEl.textContent = 'Please enter both current and new passwords.';
+                return;
+            }
+
+            if (newPass.length < 8) {
+                msgEl.textContent = 'New password must be at least 8 characters long.';
+                return;
+            }
+
+            if (currentPass === newPass) {
+                msgEl.textContent = 'New password cannot be the same as your current password.';
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                msgEl.textContent = 'New passwords do not match. Please re-enter.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'UPDATING PASSWORD...';
+
+            let serverUpdated = false;
+
+            // 1. Attempt update on real production backend API
+            try {
+                if (window.VelocheckAuth && VelocheckAuth.getToken()) {
+                    await VelocheckAuth.changePassword(currentPass, newPass);
+                    serverUpdated = true;
+                }
+            } catch (apiErr) {
+                // If API rejected due to wrong current password, show error and stop
+                if (apiErr.message.includes('Current password is incorrect') || apiErr.message.includes('401')) {
+                    msgEl.style.color = 'var(--signal-red)';
+                    msgEl.textContent = 'Current password is incorrect. Verification failed.';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'UPDATE PASSWORD';
+                    return;
+                }
+            }
+
+            // 2. Update local demo account repository
+            const accounts = JSON.parse(localStorage.getItem('velocheck.demoAccounts') || '{}');
+            const userKey = currentUser.phone || currentUser.email || '';
+            let foundAccount = accounts[userKey];
+
+            if (!foundAccount) {
+                for (const k in accounts) {
+                    const acc = accounts[k];
+                    if ((currentUser.email && acc.email && acc.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                        (currentUser.phone && acc.phone === currentUser.phone)) {
+                        foundAccount = acc;
+                        break;
+                    }
+                }
+            }
+
+            if (foundAccount) {
+                if (foundAccount.password && foundAccount.password !== currentPass) {
+                    msgEl.style.color = 'var(--signal-red)';
+                    msgEl.textContent = 'Current password is incorrect. Please check your credentials.';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'UPDATE PASSWORD';
+                    return;
+                }
+                foundAccount.password = newPass;
+                foundAccount.updatedAt = new Date().toISOString();
+                localStorage.setItem('velocheck.demoAccounts', JSON.stringify(accounts));
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'UPDATE PASSWORD';
+            msgEl.style.color = 'var(--signal-green)';
+            msgEl.textContent = '✔ Password has been updated successfully!';
+
+            // Reset inputs
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+
+            setTimeout(() => {
+                msgEl.textContent = '';
+            }, 5000);
+        }
+
+        // -------------------------------------------------------------
+        // DANGER ZONE: ACCOUNT DELETION HANDLER
+        // -------------------------------------------------------------
+        async function handleDeleteAccount() {
+            const deletePassword = document.getElementById('deletePassword').value;
+            const confirmText = document.getElementById('deleteConfirmationText').value.trim();
+            const msgEl = document.getElementById('deleteAccountMsg');
+            const submitBtn = document.getElementById('deleteAccountSubmitBtn');
+
+            msgEl.textContent = '';
+            msgEl.style.color = 'var(--signal-red)';
+
+            if (confirmText !== 'DELETE') {
+                msgEl.textContent = 'Please type DELETE exactly to confirm account deletion.';
+                return;
+            }
+
+            if (!deletePassword) {
+                msgEl.textContent = 'Password is required to confirm account deletion.';
+                return;
+            }
+
+            // Secondary confirmation modal prompt
+            const doubleConfirm = confirm(
+                "FINAL WARNING: Are you completely sure you want to delete your VELOCHECK account?\n\n" +
+                "All your registered vehicles, tyre telemetry data, and device connections will be permanently wiped."
+            );
+            if (!doubleConfirm) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'DELETING ACCOUNT PERMANENTLY...';
+
+            // 1. Try deleting on backend server
+            try {
+                if (window.VelocheckAuth && VelocheckAuth.getToken()) {
+                    await VelocheckAuth.deleteAccount(deletePassword);
+                }
+            } catch (apiErr) {
+                if (apiErr.message.includes('Incorrect password') || apiErr.message.includes('401')) {
+                    msgEl.textContent = 'Incorrect password. Account deletion rejected.';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'DELETE ACCOUNT PERMANENTLY';
+                    return;
+                }
+            }
+
+            // 2. Remove from local demo accounts
+            const accounts = JSON.parse(localStorage.getItem('velocheck.demoAccounts') || '{}');
+            const userKey = currentUser.phone || currentUser.email || '';
+            delete accounts[userKey];
+
+            for (const k in accounts) {
+                const acc = accounts[k];
+                if ((currentUser.email && acc.email && acc.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                    (currentUser.phone && acc.phone === currentUser.phone)) {
+                    delete accounts[k];
+                }
+            }
+            localStorage.setItem('velocheck.demoAccounts', JSON.stringify(accounts));
+
+            // Clear current user session
+            localStorage.removeItem('velocheck.currentUser');
+            sessionStorage.removeItem('velocheck_token');
+            sessionStorage.removeItem('velocheck_user');
+
+            alert('Your VELOCHECK account and associated data have been permanently deleted.');
+            window.location.href = 'auth.html';
+        }
+
+        // -------------------------------------------------------------
+        // ESP32 PRESETS & PING TEST
+        // -------------------------------------------------------------
+        function setPreset(url) {
+            document.getElementById("apiEndpoint").value = url;
+        }
+
+        async function testConnection() {
+            const endpoint = document.getElementById("apiEndpoint").value.trim().replace(/\/$/, "");
+            const out = document.getElementById("pingResult");
+            out.innerHTML = '<span style="color: var(--signal-cyan);">Pinging ESP32...</span>';
+
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 3000);
+            try {
+                const t0 = performance.now();
+                const res = await fetch(`${endpoint}/api/readings/latest?vehicle_type=bike`, {
+                    signal: controller.signal,
+                    cache: "no-store"
+                });
+                clearTimeout(id);
+                const t1 = performance.now();
+                if (res.ok) {
+                    out.innerHTML = `<span style="color: var(--signal-green);">✔ Connected to ESP32 (${Math.round(t1 - t0)}ms latency)</span>`;
+                } else {
+                    out.innerHTML = `<span style="color: var(--signal-amber);">Connected but received HTTP ${res.status}</span>`;
+                }
+            } catch (err) {
+                clearTimeout(id);
+                out.innerHTML = '<span style="color: var(--signal-red);">✖ Cannot reach ESP32. Ensure phone Wi-Fi is on VELOCHECK-WIFI</span>';
+            }
+        }
+
+        function saveSettings() {
+            const url = document.getElementById("apiEndpoint").value.trim();
+            const sim = document.getElementById("simToggle").checked;
+            localStorage.setItem("velocheck.apiBase", url);
+            localStorage.setItem("velocheck.simFallback", sim ? "true" : "false");
+            alert("Settings saved successfully!");
+        }
+    </script>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

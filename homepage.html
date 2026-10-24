@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocheck — Automotive Safety &amp; Roadside Assistance Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#090e1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="app-navigation.js" defer></script>
+    <script src="ai-assistant.js" defer></script>
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark" aria-hidden="true"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline" id="userTagline">Automotive Safety &amp; Roadside Assistance · <a href="auth.html" style="color:var(--signal-cyan);text-decoration:none;">Sign in</a></p>
+            </div>
+        </div>
+        <div class="vc-header-meta">
+            Vehicle Health Hub<br>
+            <strong id="espLinkStatus">Ready &amp; Monitored</strong>
+        </div>
+    </header>
+
+    <main class="vc-page">
+        <!-- Connectivity & Wi-Fi Telemetry Bar -->
+        <div class="wifi-status-bar">
+            <span style="display:flex; align-items:center; gap:8px;">
+                <span class="wifi-dot" id="wifiIndicator" title="Sensor link active"></span>
+                <span>Telemetry Interface: <strong id="espAddressLabel">http://192.168.4.1</strong></span>
+            </span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:11px; color:var(--text-tertiary);">Direct ESP32 Wi-Fi / Cloud Sync</span>
+                <a href="setting.html" style="color:var(--signal-cyan); text-decoration:none; font-weight:600;">Configure ⚙</a>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             1. REALISTIC HERO SECTION
+             ========================================================= -->
+        <section class="hero-section fade-in-up">
+            <div class="hero-copy">
+                <div class="hero-pill-badge">
+                    <span>🛡️</span> Verified Automotive Telemetry Platform
+                </div>
+                <h2 class="hero-heading">Drive Safer.<br>Stay Road-Ready.</h2>
+                <p class="hero-subtitle">
+                    Monitor vehicle maintenance, understand tyre safety, and find roadside assistance when you need it.
+                </p>
+                <div class="hero-cta-group">
+                    <a href="car.html" class="btn btn-primary">
+                        📊 Open Dashboard
+                    </a>
+                    <a href="towing.html" class="btn btn-outline">
+                        🛟 Find Nearby Assistance
+                    </a>
+                </div>
+                <div style="display:flex; gap:16px; align-items:center; margin-top:8px; font-size:12px; color:var(--text-secondary);">
+                    <span>✓ Real-time TPMS &amp; Tread Tracking</span>
+                    <span>✓ Certified Lucknow Garages</span>
+                </div>
+            </div>
+
+            <div class="hero-visual-card">
+                <div class="hero-photo-wrap">
+                    <!-- Realistic Mechanic / Tyre Inspection Illustration -->
+                    <svg viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
+                        <defs>
+                            <linearGradient id="bayBg" x1="0" y1="0" x2="400" y2="200" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#0e172a"/>
+                                <stop offset="100%" stop-color="#1e293b"/>
+                            </linearGradient>
+                            <linearGradient id="treadGrad" x1="160" y1="40" x2="240" y2="160" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#334155"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="400" height="200" fill="url(#bayBg)"/>
+                        <!-- Workshop diagnostic grid lines -->
+                        <line x1="0" y1="160" x2="400" y2="160" stroke="#334155" stroke-width="2"/>
+                        <line x1="60" y1="160" x2="10" y2="200" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="340" y1="160" x2="390" y2="200" stroke="#1e293b" stroke-width="2"/>
+                        <!-- Automotive wheel representation -->
+                        <circle cx="200" cy="110" r="75" fill="#1e293b" stroke="#475569" stroke-width="12"/>
+                        <circle cx="200" cy="110" r="55" fill="#0f172a" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="6 4"/>
+                        <circle cx="200" cy="110" r="35" fill="#334155" stroke="#64748b" stroke-width="3"/>
+                        <circle cx="200" cy="110" r="14" fill="#0ea5e9"/>
+                        <!-- Diagnostic laser indicator -->
+                        <line x1="200" y1="20" x2="200" y2="85" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="200" cy="85" r="4" fill="#38bdf8"/>
+                        <!-- Data labels -->
+                        <text x="20" y="40" fill="#94a3b8" font-family="sans-serif" font-size="11" font-weight="700">DIAGNOSTIC BAY #2 · 3D LASER SCAN</text>
+                        <text x="20" y="58" fill="#f8fafc" font-family="sans-serif" font-size="13" font-weight="700">Tread Depth: 6.2 mm · Normal</text>
+                        <text x="270" y="40" fill="#10b981" font-family="sans-serif" font-size="11" font-weight="700">● 33.0 PSI VERIFIED</text>
+                    </svg>
+                </div>
+
+                <div class="hero-maint-summary">
+                    <div class="hero-maint-title">
+                        <span>Active Vehicle Status</span>
+                        <span style="color:var(--signal-green);">● Road Ready</span>
+                    </div>
+                    <div class="hero-maint-metric">
+                        <span class="val">UP32 EV 2026</span>
+                        <span class="tag">Overall Health: 92%</span>
+                    </div>
+                    <div class="hero-maint-items">
+                        <div>
+                            <span>Avg Tread Depth</span>
+                            <strong>6.2 mm (Healthy)</strong>
+                        </div>
+                        <div>
+                            <span>Next Scheduled Service</span>
+                            <strong>14 Apr 2027</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Vehicle Selector -->
+        <section class="panel" style="padding:16px 20px;">
+            <label class="panel-label" for="vehicleDropdown">Choose vehicle to monitor &amp; view diagnostics</label>
+            <div class="vehicle-select-row">
+                <select id="vehicleDropdown" onchange="if(this.value) window.location.href=this.value;">
+                    <option value="">-- Select Active Vehicle --</option>
+                    <option value="car.html" selected>Car — UP32 EV 2026 (Four Wheeler / Sedan)</option>
+                    <option value="bike.html">Bike — UP32 AW 7094 (Two Wheeler / Sport)</option>
+                </select>
+                <a class="btn btn-outline" href="registeration.html" style="white-space:nowrap;">+ Add Vehicle</a>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             2. THREE-STEP "HOW VELOCHECK WORKS"
+             ========================================================= -->
+        <section class="panel">
+            <h3 style="font-family:var(--font-display); font-size:18px; color:#fff; margin-bottom:4px;">How Velocheck Works</h3>
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+                Three practical steps to keep your vehicle safe, reliable, and compliant.
+            </p>
+
+            <div class="how-it-works-grid">
+                <div class="how-step-card">
+                    <span class="how-step-num">1</span>
+                    <h4 class="how-step-title">Connect or Log</h4>
+                    <p class="how-step-desc">
+                        Link your wireless ESP32 TPMS sensor or log your vehicle's current tyre specifications and odometer manually.
+                    </p>
+                </div>
+
+                <div class="how-step-card">
+                    <span class="how-step-num">2</span>
+                    <h4 class="how-step-title">Track Safety Indicators</h4>
+                    <p class="how-step-desc">
+                        Monitor calibrated cold tyre pressures, tread wear progression, and temperature changes without confusing technical jargon.
+                    </p>
+                </div>
+
+                <div class="how-step-card">
+                    <span class="how-step-num">3</span>
+                    <h4 class="how-step-title">Act With Confidence</h4>
+                    <p class="how-step-desc">
+                        Receive timely rotation reminders, consult our AI safety assistant, or dispatch a flatbed tow truck in an emergency.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             3. FEATURE SPOTLIGHT CARDS
+             ========================================================= -->
+        <section>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+                <h3 style="font-family:var(--font-display); font-size:18px; color:#fff;">Comprehensive Vehicle Safety Suite</h3>
+                <span style="font-size:12px; color:var(--text-secondary);">Everything you need on one platform</span>
+            </div>
+
+            <div class="features-grid">
+                <!-- Feature 1: AI Maintenance Insights -->
+                <div class="feature-box">
+                    <div class="feature-icon-wrap">🤖</div>
+                    <h4 class="feature-title">AI Maintenance Insights</h4>
+                    <p class="feature-desc">
+                        Plain-language maintenance guidance. Understand whether your tyre wear is normal, how weather impacts PSI, and when to rotate axles.
+                    </p>
+                    <a href="#aiAssistantSection" class="feature-link">Ask AI Assistant →</a>
+                </div>
+
+                <!-- Feature 2: Tyre Safety & TPMS -->
+                <div class="feature-box">
+                    <div class="feature-icon-wrap">🛞</div>
+                    <h4 class="feature-title">Tyre Safety &amp; Diagnostics</h4>
+                    <p class="feature-desc">
+                        Individual wheel telemetry for pressure, operating temperature, and tread depth with clear status tags (Normal, Check Recommended).
+                    </p>
+                    <a href="car.html" class="feature-link">View Live Tyre Health →</a>
+                </div>
+
+                <!-- Feature 3: Service Centres -->
+                <div class="feature-box">
+                    <div class="feature-icon-wrap">🏢</div>
+                    <h4 class="feature-title">Nearby Service Centres</h4>
+                    <p class="feature-desc">
+                        Find certified tyre fitting bays, 3D laser alignment shops, and nitrogen stations near your current location across Lucknow.
+                    </p>
+                    <a href="javascript:void(0)" onclick="findServiceCentres()" class="feature-link">Find Nearest Bay →</a>
+                </div>
+
+                <!-- Feature 4: Roadside Assistance -->
+                <div class="feature-box">
+                    <div class="feature-icon-wrap">🚛</div>
+                    <h4 class="feature-title">Roadside Towing &amp; Pitstop</h4>
+                    <p class="feature-desc">
+                        Flatbed towing trucks and mobile tyre puncture units with live driver ETA, transparent flat rates, and verified booking tokens.
+                    </p>
+                    <a href="towing.html" class="feature-link">Book Assistance Pass →</a>
+                </div>
+
+                <!-- Feature 5: Maintenance History -->
+                <div class="feature-box">
+                    <div class="feature-icon-wrap">📋</div>
+                    <h4 class="feature-title">Maintenance History Logs</h4>
+                    <p class="feature-desc">
+                        Digital job cards, workshop bills, tyre replacement milestones, and warranty logs stored safely in your personal vehicle timeline.
+                    </p>
+                    <a href="maintenance.html" class="feature-link">Open Service Log →</a>
+                </div>
+
+                <!-- Feature 6: Multi-Vehicle Garage -->
+                <div class="feature-box">
+                    <div class="feature-icon-wrap">🚗</div>
+                    <h4 class="feature-title">Fleet &amp; Family Profiles</h4>
+                    <p class="feature-desc">
+                        Switch seamlessly between your two-wheelers and four-wheelers with tailored pressure targets and service schedules for each.
+                    </p>
+                    <a href="detail.html" class="feature-link">Manage Garage Vehicles →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             4. AI ASSISTANT & TYRE PHOTO SCANNER SECTION
+             ========================================================= -->
+        <section class="ai-assistant-card" id="aiAssistantSection">
+            <div class="ai-assistant-head">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="ai-badge">🤖 Velocheck AI Assistant</span>
+                    <h3 style="font-family:var(--font-display); font-size:18px; color:#fff; margin:0;">Automotive Safety Advisor</h3>
+                </div>
+                <span class="ai-disclaimer-pill">Simulated AI guidance · Not a replacement for physical inspection</span>
+            </div>
+
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;">
+                Ask any question about tyre maintenance, highway pressure standards, monsoon safety, or towing procedures:
+            </p>
+
+            <div class="ai-quick-prompts">
+                <button type="button" class="ai-prompt-btn" onclick="VeloCheckAI.ask('What is the recommended tyre pressure for highway driving?')">
+                    Highway PSI recommendations?
+                </button>
+                <button type="button" class="ai-prompt-btn" onclick="VeloCheckAI.ask('How do I know if my tread is too worn?')">
+                    How to inspect tread depth?
+                </button>
+                <button type="button" class="ai-prompt-btn" onclick="VeloCheckAI.ask('How often should tyres be rotated?')">
+                    Tyre rotation intervals?
+                </button>
+                <button type="button" class="ai-prompt-btn" onclick="VeloCheckAI.ask('What should I do during monsoon rains?')">
+                    Monsoon driving safety?
+                </button>
+            </div>
+
+            <!-- Natural Chat Interface -->
+            <div class="ai-chat-window" id="aiChatWindow">
+                <div class="ai-chat-bubble ai">
+                    <strong>Velocheck AI Assistant:</strong><br>
+                    Hello Operator! I'm here to answer your tyre maintenance, pressure calibration, and roadside safety questions. Select a common prompt above or type your question below.
+                </div>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="aiChatInput" placeholder="e.g. Is 30 PSI okay for long highway trips?" onkeydown="if(event.key==='Enter') VeloCheckAI.ask(this.value)">
+                <button type="button" class="btn btn-primary" onclick="VeloCheckAI.ask(document.getElementById('aiChatInput').value)">
+                    Send
+                </button>
+            </div>
+
+            <!-- Visual Tyre Scanner -->
+            <div style="border-top:1px solid var(--line-dim); padding-top:16px; margin-top:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <h4 style="font-family:var(--font-display); font-size:15px; color:#fff;">📸 Visual Tyre Photo Check (Demonstration)</h4>
+                    <span style="font-size:11px; color:var(--text-tertiary);">Upload tyre tread or sidewall photo</span>
+                </div>
+                <label class="photo-upload-dropzone" for="tyrePhotoInput">
+                    <input type="file" id="tyrePhotoInput" accept="image/*" style="display:none;" onchange="VeloCheckAI.handlePhotoSelect(event)">
+                    <div style="font-size:24px; margin-bottom:6px;">📷</div>
+                    <strong style="color:var(--signal-cyan); font-size:13.5px; display:block;">Click to Select or Drop a Tyre Photo</strong>
+                    <span style="font-size:12px; color:var(--text-secondary);">Supports JPG, PNG or WEBP photos of tread grooves</span>
+                </label>
+                <div class="photo-preview-wrap" id="photoPreviewWrap">
+                    <img id="photoPreviewImg" alt="Selected tyre inspection photo">
+                </div>
+                <div id="photoAnalysisResult" style="display:none; margin-top:12px;"></div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             5. TRANSPARENT SUBSCRIPTION & PRICING PLANS
+             ========================================================= -->
+        <section>
+            <div style="text-align:center; margin-bottom:16px;">
+                <h3 style="font-family:var(--font-display); font-size:20px; color:#fff;">Transparent Service &amp; Safety Plans</h3>
+                <p style="font-size:13px; color:var(--text-secondary); max-width:500px; margin:4px auto 0;">
+                    Choose essential self-monitoring or upgrade to priority roadside assistance and certified garage discounts.
+                </p>
+            </div>
+
+            <div class="sub-plans-grid">
+                <!-- Free Plan -->
+                <div class="plan-card">
+                    <h4 class="plan-name">Essential</h4>
+                    <p class="plan-desc">For vehicle owners looking to monitor tyre pressures and log maintenance history.</p>
+                    <div class="plan-pricing">
+                        <span class="plan-price-num">₹0</span>
+                        <span class="plan-price-cycle">/ forever free</span>
+                    </div>
+                    <ul class="plan-features-list">
+                        <li><span class="feat-icon">✓</span> Direct Wi-Fi sensor telemetry link</li>
+                        <li><span class="feat-icon">✓</span> Manual maintenance history logging</li>
+                        <li><span class="feat-icon">✓</span> Basic AI safety advisor access</li>
+                        <li><span class="feat-icon">✓</span> Standard roadside assistance requests</li>
+                    </ul>
+                    <a href="car.html" class="plan-btn">Active Plan</a>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="plan-card popular">
+                    <div class="plan-badge-top">Recommended</div>
+                    <h4 class="plan-name" style="color:var(--signal-cyan);">Velocheck Pro</h4>
+                    <p class="plan-desc">Priority roadside dispatches and 15% discount at authorized service centers.</p>
+                    <div class="plan-pricing">
+                        <span class="plan-price-num">₹199</span>
+                        <span class="plan-price-cycle">/ month</span>
+                    </div>
+                    <ul class="plan-features-list">
+                        <li><span class="feat-icon">✓</span> Everything in Essential</li>
+                        <li><span class="feat-icon">✓</span> Priority emergency flatbed towing</li>
+                        <li><span class="feat-icon">✓</span> 15% discount on tyre replacement &amp; balancing</li>
+                        <li><span class="feat-icon">✓</span> Unlimited AI photo inspections</li>
+                        <li><span class="feat-icon">✓</span> SMS breakdown dispatch confirmation</li>
+                    </ul>
+                    <a href="subscription.html" class="plan-btn primary">Upgrade to Pro</a>
+                </div>
+
+                <!-- Fleet / Family Plan -->
+                <div class="plan-card">
+                    <h4 class="plan-name">Fleet &amp; Family</h4>
+                    <p class="plan-desc">Comprehensive coverage for multi-vehicle households and commercial operators.</p>
+                    <div class="plan-pricing">
+                        <span class="plan-price-num">₹499</span>
+                        <span class="plan-price-cycle">/ month</span>
+                    </div>
+                    <ul class="plan-features-list">
+                        <li><span class="feat-icon">✓</span> Up to 5 vehicles monitored simultaneously</li>
+                        <li><span class="feat-icon">✓</span> Zero-wait VIP roadside guarantee</li>
+                        <li><span class="feat-icon">✓</span> Official monthly tyre audit reports</li>
+                        <li><span class="feat-icon">✓</span> Dedicated vehicle safety specialist</li>
+                    </ul>
+                    <a href="subscription.html" class="plan-btn">View Fleet Plan</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             6. MAIN NAVIGATION GRID (PORTAL SHORTCUTS)
+             ========================================================= -->
+        <nav aria-label="Main application navigation">
+            <div class="nav-grid">
+                <a class="nav-tile" href="detail.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 12a4 4 0 100-8 4 4 0 000 8z"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                    Vehicle Details
+                </a>
+                <a class="nav-tile" href="setting.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.04 1.56V21a2 2 0 11-4 0v-.09A1.7 1.7 0 008.44 19.3a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.08 15a1.7 1.7 0 00-1.56-1.04H2.5a2 2 0 110-4h.09A1.7 1.7 0 004.15 8.6a1.7 1.7 0 00-.34-1.87l-.06-.06A2 2 0 116.58 3.84l.06.06A1.7 1.7 0 008.5 4.24a1.7 1.7 0 001.04-1.56V2.6a2 2 0 114 0v.09A1.7 1.7 0 0015.5 4.24a1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87 1.7 1.7 0 001.56 1.04h.09a2 2 0 110 4h-.09a1.7 1.7 0 00-1.56 1.04z"/></svg>
+                    Settings
+                </a>
+                <a class="nav-tile" href="notification.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+                    Notifications
+                </a>
+                <a class="nav-tile nav-tile-premium" href="subscription.html">
+                    <span class="premium-ribbon" id="navPremiumRibbon">👑 PRO</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    Subscription
+                </a>
+                <a class="nav-tile" href="maintenance.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    Maintenance
+                </a>
+                <a class="nav-tile" href="towing.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 16.5V7h10.5v9.5"/><path d="M12 10h4.2l3.3 3.5v3H12"/><circle cx="6" cy="17.5" r="2"/><circle cx="16" cy="17.5" r="2"/></svg>
+                    Towing
+                </a>
+            </div>
+        </nav>
+
+        <!-- =========================================================
+             7. NEARBY SERVICE LOCATOR
+             ========================================================= -->
+        <section class="panel tyre-finder">
+            <h3 style="font-family:var(--font-display); font-size:18px; color:#fff;">Nearby Certified Tyre Service Centres</h3>
+            <p style="font-size:13.5px; color:var(--text-secondary); max-width:65ch;">
+                Locate verified puncture repair shops, wheel alignment facilities, and tyre dealerships around your current location in Lucknow.
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+                <button class="btn btn-primary" type="button" onclick="findServiceCentres()">
+                    📍 Find Centres Near Me
+                </button>
+                <a class="btn btn-outline" href="towing.html">
+                    🎟️ Book Diagnostic Pass / Towing
+                </a>
+            </div>
+            <p id="status" class="status-text" role="status" aria-live="polite" style="margin-top:8px;"></p>
+        </section>
+    </main>
+
+    <!-- JavaScript Handlers -->
+    <script>
+        const savedUrl = localStorage.getItem("velocheck.apiBase") || "http://192.168.4.1";
+        const espLabel = document.getElementById("espAddressLabel");
+        if (espLabel) espLabel.textContent = savedUrl;
+    </script>
+    <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+
+    <script>
+        function findServiceCentres() {
+            const status = document.getElementById("status");
+            if (!navigator.geolocation) {
+                if (status) status.textContent = "Geolocation is not supported by your browser.";
+                return;
+            }
+
+            if (status) status.textContent = "Locating nearby certified service bays...";
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    const mapsURL =
+                        "https://www.google.com/maps/search/" +
+                        encodeURIComponent("tyre repair shops Lucknow") +
+                        "/@" + latitude + "," + longitude + ",14z";
+
+                    if (status) status.textContent = "Location identified! Opening service map...";
+                    window.open(mapsURL, "_blank");
+                },
+                function (error) {
+                    if (status) {
+                        if (error.code === error.PERMISSION_DENIED) {
+                            status.textContent = "Location permission denied. Please allow location access to find nearby shops.";
+                        } else {
+                            status.textContent = "Unable to fetch location. Opening default Lucknow centre map...";
+                            window.open("https://www.google.com/maps/search/tyre+repair+shops+Lucknow", "_blank");
+                        }
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
+        // Active session check
+        try {
+            const userJson = localStorage.getItem('velocheck.currentUser');
+            if (userJson) {
+                const u = JSON.parse(userJson);
+                const contact = u.phone || u.email || '';
+                const tagEl = document.getElementById('userTagline');
+                if (tagEl && u.name) {
+                    tagEl.innerHTML = `Operator 9140 · ${u.name} ${contact ? `(${contact})` : ''} · <a href="auth.html" style="color:var(--signal-cyan);text-decoration:none;" onclick="localStorage.removeItem('velocheck.currentUser');">Sign out</a>`;
+                }
+            }
+        } catch (e) {}
+
+        // Subscription Tier Ribbon
+        (function() {
+            try {
+                const tier = (localStorage.getItem("velocheck_subscription_tier") || "FREE").toUpperCase();
+                const ribbon = document.getElementById("navPremiumRibbon");
+                if (ribbon) {
+                    if (tier === "PRO") ribbon.textContent = "✓ PRO";
+                    else if (tier === "TITANIUM") ribbon.textContent = "👑 VIP";
+                    else if (tier === "FLEET") ribbon.textContent = "🚛 FLEET";
+                    else ribbon.textContent = "👑 PRO";
+                }
+            } catch (e) {}
+        })();
+    </script>
+</body>
+</html>

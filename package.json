@@ -1,0 +1,22 @@
+{
+  "name": "velocheck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VELOCHECK tyre health monitoring app",
+  "scripts": {
+    "sync": "npx cap sync android",
+    "open:android": "npx cap open android",
+    "run:android": "npx cap run android",
+    "build:web": "echo Frontend is already in www/",
+    "build:apk": "npx cap sync android && cd android && gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/core": "^7.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

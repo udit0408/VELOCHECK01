@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Vehicle — VELOCHECK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#070a0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<script src="app-navigation.js"></script>
+<body>
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline">Vehicle Registration</p>
+            </div>
+        </div>
+        <a href="homepage.html" class="icon-btn" style="text-decoration:none;">←</a>
+    </header>
+
+    <main class="vc-page-narrow">
+        <div class="panel">
+            <p class="panel-label">Add a new vehicle</p>
+            <form onsubmit="event.preventDefault(); window.location.href='homepage.html';">
+                <div class="field" style="margin-bottom: 12px;">
+                    <label for="vType">Vehicle Type</label>
+                    <select id="vType" required>
+                        <option value="bike">Two Wheeler (Bike / Scooter)</option>
+                        <option value="car">Four Wheeler (Car / SUV)</option>
+                    </select>
+                </div>
+
+                <div class="field" style="margin-bottom: 12px;">
+                    <label for="vReg">Registration Number</label>
+                    <input id="vReg" type="text" placeholder="e.g. UP32 AW 7094" required>
+                </div>
+
+                <div class="field" style="margin-bottom: 12px;">
+                    <label for="vMake">Make &amp; Model</label>
+                    <input id="vMake" type="text" placeholder="e.g. Royal Enfield Hunter 350" required>
+                </div>
+
+                <div class="field" style="margin-bottom: 12px;">
+                    <label for="vDate">Tyre Install Date</label>
+                    <input id="vDate" type="date" value="2025-06-26" required>
+                </div>
+
+                <div class="field" style="margin-bottom: 16px;">
+                    <label for="vEspId">ESP32 Device Identifier</label>
+                    <input id="vEspId" type="text" placeholder="e.g. ESP32-TPMS-9140" value="ESP32-TPMS-9140">
+                </div>
+
+                <button type="submit" class="btn btn-block">Save and Connect</button>
+            </form>
+        </div>
+    </main>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

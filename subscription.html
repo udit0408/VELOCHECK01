@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription &amp; Premium Plans — VELOCHECK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#070a0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="auth-client.js"></script>
+    <script src="app-navigation.js" defer></script>
+</head>
+<body class="subscription-page">
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark" style="border-color:var(--signal-gold); box-shadow:0 0 14px var(--signal-gold-glow);"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline" id="userTagline">Operator 9140 · Udit Veer Singh · <a href="homepage.html" style="color:var(--signal-cyan);text-decoration:none;">← Dashboard</a></p>
+            </div>
+        </div>
+        <div class="vc-header-meta">
+            VIP Telemetry Tier<br>
+            <strong id="activeTierHeaderBadge" style="color:var(--signal-gold); text-shadow:0 0 10px var(--signal-gold-glow);">FREE TIER</strong>
+        </div>
+    </header>
+
+    <main class="vc-page">
+        <!-- Back Navigation & Quick Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <a href="homepage.html" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                ← Back to Dashboard
+            </a>
+            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">
+                🔒 256-Bit Cryptographic Telemetry Protection
+            </span>
+        </div>
+
+        <!-- =========================================================
+             HOLOGRAPHIC ACTIVE MEMBERSHIP PASS CARD
+             ========================================================= -->
+        <section class="vip-pass-card" id="vipPassCard">
+            <div class="vip-card-header">
+                <div class="vip-card-badge">
+                    <span>👑</span>
+                    <span id="cardTierTitle">FREE OPERATOR TIER</span>
+                </div>
+                <span class="status-chip" id="cardStatusChip">ACTIVE MONITOR</span>
+            </div>
+            <div class="vip-card-grid">
+                <div class="vip-card-item">
+                    <span class="k">Member Name</span>
+                    <span class="v" id="cardMemberName">Udit Veer Singh</span>
+                </div>
+                <div class="vip-card-item">
+                    <span class="k">Account ID</span>
+                    <span class="v" id="cardMemberId">VLC-9140-VIP</span>
+                </div>
+                <div class="vip-card-item">
+                    <span class="k">Towing Priority</span>
+                    <span class="v" id="cardPriorityStatus" style="color:var(--signal-cyan);">Standard Radar Queue</span>
+                </div>
+                <div class="vip-card-item">
+                    <span class="k">Valid Through</span>
+                    <span class="v" id="cardValidThrough">Lifetime Standard</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Intro Title & Subhead -->
+        <div style="text-align:center; margin-bottom: 10px;">
+            <div class="premium-badge-tag" style="margin-bottom:8px;">
+                <span>👑</span> VELOCHECK PREMIUM SUITE <span>👑</span>
+            </div>
+            <h2 style="font-family:var(--font-display); font-size:28px; font-weight:800; letter-spacing:1px; color:#fff;">
+                Select Your Subscription Plan
+            </h2>
+            <p style="font-size:14px; color:var(--text-secondary); max-width:540px; margin:6px auto 0;">
+                Empower your vehicles with zero-wait emergency towing, live AI predictive blowout warnings, and exclusive roadside repair discounts.
+            </p>
+        </div>
+
+        <!-- =========================================================
+             BILLING CYCLE TOGGLE
+             ========================================================= -->
+        <div class="sub-billing-toggle" role="tablist" aria-label="Billing Cycle">
+            <button type="button" class="sub-switch-btn active" id="btnMonthly" data-cycle="monthly">
+                Monthly Billing
+            </button>
+            <button type="button" class="sub-switch-btn" id="btnAnnual" data-cycle="annual">
+                Annual Billing <span class="save-badge">🔥 SAVE 25%</span>
+            </button>
+        </div>
+
+        <!-- =========================================================
+             THE 4 PLANS GRID
+             ========================================================= -->
+        <div class="sub-plans-grid">
+            <!-- Plan 1: Free Operator -->
+            <div class="plan-card" id="planFreeCard">
+                <div class="plan-name">
+                    <span>🛡️</span> Free Operator
+                </div>
+                <p class="plan-desc">Standard real-time tyre pressure &amp; temperature monitoring for daily city commuters.</p>
+                <div class="plan-pricing">
+                    <span class="plan-price-num">₹0</span>
+                    <span class="plan-price-cycle">/ forever</span>
+                    <div class="plan-savings-pill" style="color:var(--text-tertiary);">No credit card required</div>
+                </div>
+                <ul class="plan-features-list">
+                    <li><span class="feat-icon">✓</span> Direct ESP32 Wi-Fi Telemetry</li>
+                    <li><span class="feat-icon">✓</span> 1 Vehicle Registered (Bike or Car)</li>
+                    <li><span class="feat-icon">✓</span> Standard Towing Truck Dispatch</li>
+                    <li><span class="feat-icon">✓</span> Manual Tyre Centre Shop Finder</li>
+                    <li><span class="feat-icon">✓</span> Critical Pressure Alert Notifications</li>
+                </ul>
+                <button type="button" class="plan-btn active-plan" id="btnPlanFree" disabled>
+                    ✓ Current Active Plan
+                </button>
+            </div>
+
+            <!-- Plan 2: Velocheck Pro (RECOMMENDED / MOST POPULAR) -->
+            <div class="plan-card popular" id="planProCard">
+                <div class="plan-badge-top">⭐ MOST POPULAR &amp; RECOMMENDED</div>
+                <div class="plan-name" style="color:var(--signal-cyan);">
+                    <span>⚡</span> Velocheck Pro
+                </div>
+                <p class="plan-desc">Essential high-priority roadside assistance, zero-wait dispatches, and multi-vehicle garage sync.</p>
+                <div class="plan-pricing">
+                    <span class="plan-price-num" id="proPriceDisplay">₹299</span>
+                    <span class="plan-price-cycle" id="proCycleDisplay">/ month</span>
+                    <div class="plan-savings-pill" id="proSavingsDisplay">Billed monthly · Cancel anytime</div>
+                </div>
+                <ul class="plan-features-list">
+                    <li><span class="feat-icon">✓</span> <strong>Zero-Wait Priority Towing Dispatches</strong> (Fast-Track Queue)</li>
+                    <li><span class="feat-icon">✓</span> <strong>AI Predictive Tread Depth &amp; Blowout Alerts</strong></li>
+                    <li><span class="feat-icon">✓</span> Up to 3 Vehicles Monitored (Bikes, Cars, SUVs)</li>
+                    <li><span class="feat-icon">✓</span> <strong>15% Flat Discount</strong> at Velocheck Pitstops</li>
+                    <li><span class="feat-icon">✓</span> Free 4-Digit VIP Fast-Pass Security Tokens</li>
+                    <li><span class="feat-icon">✓</span> Direct SMS &amp; Mobile Phone Pass Confirmations</li>
+                    <li><span class="feat-icon">✓</span> 24/7 Dedicated Roadside Concierge Hotline</li>
+                </ul>
+                <button type="button" class="plan-btn primary" id="btnPlanPro" onclick="openCheckoutModal('PRO')">
+                    ⚡ Upgrade to Pro
+                </button>
+            </div>
+
+            <!-- Plan 3: Velocheck Titanium / Ultra (FAMILY & HIGHWAY) -->
+            <div class="plan-card titanium" id="planTitaniumCard">
+                <div class="plan-badge-top">👑 VIP COMPLETE PROTECTION</div>
+                <div class="plan-name" style="color:var(--signal-gold);">
+                    <span>👑</span> Titanium VIP
+                </div>
+                <p class="plan-desc">For roadtrippers, multi-vehicle families, and performance cars wanting absolute roadside peace of mind.</p>
+                <div class="plan-pricing">
+                    <span class="plan-price-num" id="titaniumPriceDisplay">₹699</span>
+                    <span class="plan-price-cycle" id="titaniumCycleDisplay">/ month</span>
+                    <div class="plan-savings-pill" id="titaniumSavingsDisplay">Billed monthly · Zero deductible</div>
+                </div>
+                <ul class="plan-features-list">
+                    <li><span class="feat-icon">✓</span> <strong>Everything in Pro Tier Included</strong></li>
+                    <li><span class="feat-icon">✓</span> <strong>Unlimited Free Emergency Towing Dispatches</strong> (50km/incident)</li>
+                    <li><span class="feat-icon">✓</span> Up to 6 Vehicles Monitored (Full Garage)</li>
+                    <li><span class="feat-icon">✓</span> Complimentary Annual 4-Wheel High-Speed Laser Balancing</li>
+                    <li><span class="feat-icon">✓</span> Free Lifetime Nitrogen Fills at all hubs</li>
+                    <li><span class="feat-icon">✓</span> Satellite / Offline Telemetry Sync</li>
+                    <li><span class="feat-icon">✓</span> Personal Master Mechanic on Speed Dial</li>
+                </ul>
+                <button type="button" class="plan-btn gold" id="btnPlanTitanium" onclick="openCheckoutModal('TITANIUM')">
+                    👑 Upgrade to Titanium
+                </button>
+            </div>
+
+            <!-- Plan 4: Commercial Fleet / Enterprise -->
+            <div class="plan-card fleet" id="planFleetCard">
+                <div class="plan-badge-top">🚛 LOGISTICS &amp; HEAVY CARGO</div>
+                <div class="plan-name" style="color:var(--signal-purple);">
+                    <span>🚛</span> Commercial Fleet
+                </div>
+                <p class="plan-desc">Heavy cargo trucks, logistics operators, and commercial delivery fleets needing multi-driver telemetry.</p>
+                <div class="plan-pricing">
+                    <span class="plan-price-num" id="fleetPriceDisplay">₹1,999</span>
+                    <span class="plan-price-cycle" id="fleetCycleDisplay">/ month</span>
+                    <div class="plan-savings-pill" id="fleetSavingsDisplay">Corporate GST Invoicing included</div>
+                </div>
+                <ul class="plan-features-list">
+                    <li><span class="feat-icon">✓</span> <strong>Everything in Titanium Tier Included</strong></li>
+                    <li><span class="feat-icon">✓</span> Dedicated Heavy Cargo &amp; Hydraulic Lift Fleet Support</li>
+                    <li><span class="feat-icon">✓</span> Unlimited Commercial Vehicles Fleet Dashboard</li>
+                    <li><span class="feat-icon">✓</span> Logistics Dispatch API &amp; Webhook Integration</li>
+                    <li><span class="feat-icon">✓</span> Dedicated Corporate Safety Account Manager</li>
+                    <li><span class="feat-icon">✓</span> Regulatory Road Safety Compliance Reports</li>
+                </ul>
+                <button type="button" class="plan-btn purple" id="btnPlanFleet" onclick="openCheckoutModal('FLEET')">
+                    🚛 Activate Fleet Plan
+                </button>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             FEATURE COMPARISON MATRIX
+             ========================================================= -->
+        <section class="panel" style="margin-top:10px;">
+            <h3 style="font-family:var(--font-display); font-size:20px; font-weight:700; letter-spacing:1px; color:#fff; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <span>📊</span> Detailed Plan Comparison Matrix
+            </h3>
+            <div class="sub-table-wrap">
+                <table class="sub-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:180px;">Core Capabilities</th>
+                            <th>Free Operator</th>
+                            <th style="color:var(--signal-cyan);">Velocheck Pro</th>
+                            <th style="color:var(--signal-gold);">Titanium VIP</th>
+                            <th style="color:var(--signal-purple);">Commercial Fleet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Towing Dispatch Speed</strong></td>
+                            <td>Standard Queue (~25m)</td>
+                            <td style="color:var(--signal-cyan); font-weight:700;">⚡ Instant Priority (~10m)</td>
+                            <td style="color:var(--signal-gold); font-weight:700;">⚡ VIP Zero-Wait (~8m)</td>
+                            <td style="color:var(--signal-purple); font-weight:700;">Dedicated Heavy Unit</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Covered Towing Dispatches</strong></td>
+                            <td>Pay Per Dispatch</td>
+                            <td>3 Included Passes / yr</td>
+                            <td style="color:var(--signal-gold); font-weight:700;">Unlimited (50km/call)</td>
+                            <td style="color:var(--signal-purple); font-weight:700;">Unlimited Commercial</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vehicles Monitored</strong></td>
+                            <td>1 Vehicle</td>
+                            <td>Up to 3 Vehicles</td>
+                            <td>Up to 6 Vehicles</td>
+                            <td>Unlimited Fleet</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AI Predictive Tread &amp; Blowout</strong></td>
+                            <td>✕ None</td>
+                            <td style="color:var(--signal-cyan); font-weight:700;">✓ Active AI Radar</td>
+                            <td style="color:var(--signal-gold); font-weight:700;">✓ Real-time Laser Depth</td>
+                            <td style="color:var(--signal-purple); font-weight:700;">✓ Fleet Machine Learning</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pitstop Tyre Center Discount</strong></td>
+                            <td>0%</td>
+                            <td style="color:var(--signal-cyan); font-weight:700;">15% Flat Off</td>
+                            <td style="color:var(--signal-gold); font-weight:700;">20% Flat Off</td>
+                            <td style="color:var(--signal-purple); font-weight:700;">Wholesale Fleet Rates</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Free Annual Wheel Balancing</strong></td>
+                            <td>✕</td>
+                            <td>✕</td>
+                            <td style="color:var(--signal-gold); font-weight:700;">✓ 4-Wheel Complete</td>
+                            <td style="color:var(--signal-purple); font-weight:700;">✓ Bi-Annual All Axles</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Support SLA</strong></td>
+                            <td>Community Support</td>
+                            <td>24/7 Priority Hotline</td>
+                            <td>Personal Speed Dial</td>
+                            <td>Dedicated Account Exec</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             FREQUENTLY ASKED QUESTIONS (FAQ)
+             ========================================================= -->
+        <section class="panel" style="margin-top:20px;">
+            <h3 style="font-family:var(--font-display); font-size:20px; font-weight:700; letter-spacing:1px; color:#fff; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                <span>💬</span> Frequently Asked Questions
+            </h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <details style="background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 16px;">
+                    <summary style="font-weight:700; color:#fff; cursor:pointer; font-size:14px;">Can I change or cancel my subscription at any time?</summary>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-top:8px; line-height:1.5;">
+                        Yes! There are no lock-in commitments. If you cancel, your premium benefits remain active until the end of your current billing cycle, after which your account safely defaults to the Free Operator tier.
+                    </p>
+                </details>
+                <details style="background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 16px;">
+                    <summary style="font-weight:700; color:#fff; cursor:pointer; font-size:14px;">How does priority towing dispatch work?</summary>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-top:8px; line-height:1.5;">
+                        Pro and Titanium members have their service tokens flagged with high-priority telemetry routing. Nearby towing drivers (Neeraj, Shivam, Sameer, Ajeet, Raghu) receive immediate push telemetry with GPS lock and bypass the standard queue.
+                    </p>
+                </details>
+                <details style="background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 16px;">
+                    <summary style="font-weight:700; color:#fff; cursor:pointer; font-size:14px;">Can I monitor both bikes and cars under one Pro plan?</summary>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-top:8px; line-height:1.5;">
+                        Absolutely. The Pro plan permits up to 3 vehicles across all types (Bike, Heavy Cargo, Hatchback, Mini SUV, and SUV). You can switch between vehicles seamlessly on the dashboard.
+                    </p>
+                </details>
+            </div>
+        </section>
+    </main>
+
+    <!-- =========================================================
+         CHECKOUT & ACTIVATION MODAL
+         ========================================================= -->
+    <div class="sub-modal-backdrop" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="modalPlanTitle">
+        <div class="sub-modal">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--line-dim); padding-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:22px;">💎</span>
+                    <h3 id="modalPlanTitle" style="font-family:var(--font-display); font-size:18px; color:#fff; letter-spacing:1px;">Upgrade to Velocheck Pro</h3>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" id="closeModalBtn" style="padding:4px 8px;">✕</button>
+            </div>
+
+            <div style="background:rgba(0,229,255,0.06); border:1px solid var(--signal-cyan); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:13px; color:var(--text-secondary);">Subscription Amount</span>
+                    <strong id="modalPlanPrice" style="font-family:var(--font-display); font-size:24px; color:#fff;">₹299</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                    <span style="font-size:12px; color:var(--text-tertiary);" id="modalCycleLabel">Billed Monthly</span>
+                    <span style="font-size:11px; color:var(--signal-green); font-weight:700;">Zero Processing Fee</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; display:block;">Select Preferred Payment Method</label>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <label style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.04); border:1px solid var(--line); padding:10px 14px; border-radius:6px; cursor:pointer;">
+                        <input type="radio" name="payMethod" value="UPI" checked style="accent-color:var(--signal-cyan);">
+                        <span style="font-size:13px; font-weight:600; color:#fff;">⚡ UPI Instant Pay (GPay, PhonePe, Paytm, BHIM)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.04); border:1px solid var(--line); padding:10px 14px; border-radius:6px; cursor:pointer;">
+                        <input type="radio" name="payMethod" value="CARD" style="accent-color:var(--signal-cyan);">
+                        <span style="font-size:13px; font-weight:600; color:#fff;">💳 Credit / Debit Card (Visa, Mastercard, RuPay)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.04); border:1px solid var(--line); padding:10px 14px; border-radius:6px; cursor:pointer;">
+                        <input type="radio" name="payMethod" value="NETBANKING" style="accent-color:var(--signal-cyan);">
+                        <span style="font-size:13px; font-weight:600; color:#fff;">🏦 Net Banking (All Major Indian Banks)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn btn-primary" id="confirmActivationBtn" style="flex:1; padding:12px;">
+                    ⚡ CONFIRM &amp; ACTIVATE PLAN
+                </button>
+            </div>
+            <p style="font-size:11px; color:var(--text-tertiary); text-align:center; margin-top:10px;">
+                Instant telemetry activation · Auto-renew can be managed anytime
+            </p>
+        </div>
+    </div>
+
+    <!-- Script Controller for Subscription -->
+    <script>
+        (function() {
+            let activeCycle = "monthly";
+            let selectedPlanId = "PRO";
+
+            const PRICING = {
+                PRO: { monthly: 299, annual: 2690, title: "Velocheck Pro", savings: "Save ₹898 per year" },
+                TITANIUM: { monthly: 699, annual: 6290, title: "Titanium VIP", savings: "Save ₹2,098 per year" },
+                FLEET: { monthly: 1999, annual: 17990, title: "Commercial Fleet", savings: "Save ₹5,998 per year" }
+            };
+
+            const btnMonthly = document.getElementById("btnMonthly");
+            const btnAnnual = document.getElementById("btnAnnual");
+            const proPriceDisplay = document.getElementById("proPriceDisplay");
+            const proCycleDisplay = document.getElementById("proCycleDisplay");
+            const proSavingsDisplay = document.getElementById("proSavingsDisplay");
+
+            const titaniumPriceDisplay = document.getElementById("titaniumPriceDisplay");
+            const titaniumCycleDisplay = document.getElementById("titaniumCycleDisplay");
+            const titaniumSavingsDisplay = document.getElementById("titaniumSavingsDisplay");
+
+            const fleetPriceDisplay = document.getElementById("fleetPriceDisplay");
+            const fleetCycleDisplay = document.getElementById("fleetCycleDisplay");
+            const fleetSavingsDisplay = document.getElementById("fleetSavingsDisplay");
+
+            const checkoutModal = document.getElementById("checkoutModal");
+            const closeModalBtn = document.getElementById("closeModalBtn");
+            const modalPlanTitle = document.getElementById("modalPlanTitle");
+            const modalPlanPrice = document.getElementById("modalPlanPrice");
+            const modalCycleLabel = document.getElementById("modalCycleLabel");
+            const confirmActivationBtn = document.getElementById("confirmActivationBtn");
+
+            // Update UI based on billing cycle
+            function setCycle(cycle) {
+                activeCycle = cycle;
+                if (cycle === "monthly") {
+                    btnMonthly.classList.add("active");
+                    btnAnnual.classList.remove("active");
+
+                    proPriceDisplay.textContent = "₹" + PRICING.PRO.monthly;
+                    proCycleDisplay.textContent = "/ month";
+                    proSavingsDisplay.textContent = "Billed monthly · Cancel anytime";
+
+                    titaniumPriceDisplay.textContent = "₹" + PRICING.TITANIUM.monthly;
+                    titaniumCycleDisplay.textContent = "/ month";
+                    titaniumSavingsDisplay.textContent = "Billed monthly · Zero deductible";
+
+                    fleetPriceDisplay.textContent = "₹" + PRICING.FLEET.monthly;
+                    fleetCycleDisplay.textContent = "/ month";
+                    fleetSavingsDisplay.textContent = "Corporate GST Invoicing included";
+                } else {
+                    btnAnnual.classList.add("active");
+                    btnMonthly.classList.remove("active");
+
+                    proPriceDisplay.textContent = "₹" + PRICING.PRO.annual;
+                    proCycleDisplay.textContent = "/ year";
+                    proSavingsDisplay.textContent = PRICING.PRO.savings;
+
+                    titaniumPriceDisplay.textContent = "₹" + PRICING.TITANIUM.annual;
+                    titaniumCycleDisplay.textContent = "/ year";
+                    titaniumSavingsDisplay.textContent = PRICING.TITANIUM.savings;
+
+                    fleetPriceDisplay.textContent = "₹" + PRICING.FLEET.annual;
+                    fleetCycleDisplay.textContent = "/ year";
+                    fleetSavingsDisplay.textContent = PRICING.FLEET.savings;
+                }
+            }
+
+            btnMonthly.addEventListener("click", () => setCycle("monthly"));
+            btnAnnual.addEventListener("click", () => setCycle("annual"));
+
+            // Check current subscription in storage
+            function renderCurrentSubscription() {
+                const currentTier = (localStorage.getItem("velocheck_subscription_tier") || "FREE").toUpperCase();
+                const cardTierTitle = document.getElementById("cardTierTitle");
+                const cardStatusChip = document.getElementById("cardStatusChip");
+                const cardPriorityStatus = document.getElementById("cardPriorityStatus");
+                const cardValidThrough = document.getElementById("cardValidThrough");
+                const activeTierHeaderBadge = document.getElementById("activeTierHeaderBadge");
+
+                // Reset buttons
+                const btnPlanFree = document.getElementById("btnPlanFree");
+                const btnPlanPro = document.getElementById("btnPlanPro");
+                const btnPlanTitanium = document.getElementById("btnPlanTitanium");
+                const btnPlanFleet = document.getElementById("btnPlanFleet");
+
+                [btnPlanFree, btnPlanPro, btnPlanTitanium, btnPlanFleet].forEach(btn => {
+                    btn.classList.remove("active-plan");
+                    btn.disabled = false;
+                });
+
+                if (currentTier === "PRO") {
+                    cardTierTitle.textContent = "VELOCHECK PRO MEMBER";
+                    cardTierTitle.style.color = "var(--signal-cyan)";
+                    cardStatusChip.textContent = "PRO VIP ACTIVE";
+                    cardStatusChip.className = "status-chip";
+                    cardPriorityStatus.textContent = "⚡ Fast-Track Queue (< 10m)";
+                    cardValidThrough.textContent = "Active (Next Renewal in 30d)";
+                    activeTierHeaderBadge.textContent = "PRO ACTIVE";
+                    activeTierHeaderBadge.style.color = "var(--signal-cyan)";
+                    btnPlanPro.textContent = "✓ Current Plan Active";
+                    btnPlanPro.classList.add("active-plan");
+                    btnPlanPro.disabled = true;
+                } else if (currentTier === "TITANIUM") {
+                    cardTierTitle.textContent = "TITANIUM VIP SUPREME";
+                    cardTierTitle.style.color = "var(--signal-gold)";
+                    cardStatusChip.textContent = "TITANIUM VIP";
+                    cardStatusChip.className = "status-chip warn";
+                    cardPriorityStatus.textContent = "👑 Zero-Wait Priority (< 8m)";
+                    cardValidThrough.textContent = "Active Annual Pass";
+                    activeTierHeaderBadge.textContent = "TITANIUM VIP";
+                    activeTierHeaderBadge.style.color = "var(--signal-gold)";
+                    btnPlanTitanium.textContent = "✓ Current Plan Active";
+                    btnPlanTitanium.classList.add("active-plan");
+                    btnPlanTitanium.disabled = true;
+                } else if (currentTier === "FLEET") {
+                    cardTierTitle.textContent = "COMMERCIAL FLEET SUITE";
+                    cardTierTitle.style.color = "var(--signal-purple)";
+                    cardStatusChip.textContent = "FLEET ACTIVE";
+                    cardStatusChip.className = "status-chip";
+                    cardPriorityStatus.textContent = "🚛 Dedicated Heavy Cargo Logistics";
+                    cardValidThrough.textContent = "Corporate Active";
+                    activeTierHeaderBadge.textContent = "FLEET ACTIVE";
+                    activeTierHeaderBadge.style.color = "var(--signal-purple)";
+                    btnPlanFleet.textContent = "✓ Current Plan Active";
+                    btnPlanFleet.classList.add("active-plan");
+                    btnPlanFleet.disabled = true;
+                } else {
+                    cardTierTitle.textContent = "FREE OPERATOR TIER";
+                    cardStatusChip.textContent = "STANDARD MONITOR";
+                    cardPriorityStatus.textContent = "Standard Radar Queue";
+                    cardValidThrough.textContent = "Lifetime Standard";
+                    activeTierHeaderBadge.textContent = "FREE TIER";
+                    btnPlanFree.textContent = "✓ Current Active Plan";
+                    btnPlanFree.classList.add("active-plan");
+                    btnPlanFree.disabled = true;
+                }
+
+                // Populate user name if signed in
+                try {
+                    const uStr = localStorage.getItem("velocheck.currentUser");
+                    if (uStr) {
+                        const u = JSON.parse(uStr);
+                        if (u.name) document.getElementById("cardMemberName").textContent = u.name;
+                    }
+                } catch(e) {}
+            }
+
+            // Open Modal
+            window.openCheckoutModal = function(planId) {
+                selectedPlanId = planId;
+                const p = PRICING[planId];
+                if (!p) return;
+
+                modalPlanTitle.textContent = "Upgrade to " + p.title;
+                const amount = activeCycle === "monthly" ? p.monthly : p.annual;
+                modalPlanPrice.textContent = "₹" + amount;
+                modalCycleLabel.textContent = activeCycle === "monthly" ? "Billed Monthly" : "Billed Annually (25% Savings Included)";
+
+                checkoutModal.classList.add("open");
+                document.body.style.overflow = "hidden";
+            };
+
+            closeModalBtn.addEventListener("click", () => {
+                checkoutModal.classList.remove("open");
+                document.body.style.overflow = "";
+            });
+
+            checkoutModal.addEventListener("click", (e) => {
+                if (e.target === checkoutModal) {
+                    checkoutModal.classList.remove("open");
+                    document.body.style.overflow = "";
+                }
+            });
+
+            // Confirm Activation
+            confirmActivationBtn.addEventListener("click", function() {
+                confirmActivationBtn.disabled = true;
+                confirmActivationBtn.textContent = "⚡ ACTIVATING CRYPTOGRAPHIC PASS...";
+
+                setTimeout(() => {
+                    localStorage.setItem("velocheck_subscription_tier", selectedPlanId);
+                    localStorage.setItem("velocheck_subscription_cycle", activeCycle);
+                    localStorage.setItem("velocheck_subscription_date", new Date().toISOString());
+
+                    checkoutModal.classList.remove("open");
+                    document.body.style.overflow = "";
+                    confirmActivationBtn.disabled = false;
+                    confirmActivationBtn.textContent = "⚡ CONFIRM & ACTIVATE PLAN";
+
+                    renderCurrentSubscription();
+                    alert(`🎉 Congratulations! Your Velocheck ${PRICING[selectedPlanId].title} is now ACTIVE! Priority dispatches and AI features are now unlocked on your dashboard.`);
+                }, 900);
+            });
+
+            renderCurrentSubscription();
+        })();
+    </script>
+    <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

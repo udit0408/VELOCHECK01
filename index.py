@@ -1,0 +1,11 @@
+"""Vercel Serverless Function entry point for FastAPI."""
+import os
+import sys
+from pathlib import Path
+
+# Add project root to sys.path so main.py is importable
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from main import app

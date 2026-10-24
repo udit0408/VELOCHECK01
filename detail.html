@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Details — VELOCHECK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#070a0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<script src="app-navigation.js"></script>
+<body>
+    <header class="vc-header">
+        <div class="vc-brand">
+            <span class="mark"></span>
+            <div>
+                <h1 class="title">VELOCHECK</h1>
+                <p class="tagline">Operator &amp; vehicle details</p>
+            </div>
+        </div>
+        <a href="homepage.html" class="icon-btn" style="text-decoration:none;">←</a>
+    </header>
+
+    <main class="vc-page-narrow">
+        <div class="panel">
+            <p class="panel-label">Operator Profile</p>
+            <ul class="kv-list">
+                <li class="kv-row"><span class="k">Name</span><span class="v">Udit Veer Singh</span></li>
+                <li class="kv-row"><span class="k">Operator ID</span><span class="v">9140</span></li>
+                <li class="kv-row"><span class="k">Location</span><span class="v">Lucknow, UP</span></li>
+            </ul>
+        </div>
+
+        <div class="panel" style="margin-top: 18px;">
+            <p class="panel-label">Primary Vehicle (Bike)</p>
+            <ul class="kv-list">
+                <li class="kv-row"><span class="k">Type</span><span class="v">Two Wheeler</span></li>
+                <li class="kv-row"><span class="k">Registration number</span><span class="v">UP32 AW 7094</span></li>
+                <li class="kv-row"><span class="k">Tyre change date</span><span class="v">26 Jun 2025</span></li>
+                <li class="kv-row"><span class="k">Next due date</span><span class="v">26 Jun 2030</span></li>
+                <li class="kv-row"><span class="k">Target Pressure</span><span class="v">Front: 28 psi | Rear: 32 psi</span></li>
+            </ul>
+        </div>
+
+        <div class="panel" style="margin-top: 18px;">
+            <p class="panel-label">Secondary Vehicle (Car)</p>
+            <ul class="kv-list">
+                <li class="kv-row"><span class="k">Type</span><span class="v">Four Wheeler</span></li>
+                <li class="kv-row"><span class="k">Registration number</span><span class="v">UP32 EV 2026</span></li>
+                <li class="kv-row"><span class="k">Target Pressure</span><span class="v">All tyres: 32 - 35 psi</span></li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="maintenance.html" class="btn btn-primary" style="display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; padding:14px; font-weight:600;">
+                📋 View Full Maintenance &amp; Tyre Service History
+            </a>
+        </div>
+    </main>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>
